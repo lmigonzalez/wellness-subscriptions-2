@@ -1,36 +1,175 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Daily Wellness Dashboard
+
+A standalone single-page wellness application that displays daily wellness plans including quotes, workouts, and meal plans. The app automatically updates daily at 4:00 AM ET and sends PDF reports via email to registered users.
+
+## Features
+
+- **Dark-themed Dashboard**: Beautiful, responsive design displaying daily wellness content
+- **Daily Auto-Update**: Content refreshes automatically at 4:00 AM ET
+- **Email Notifications**: Daily PDF reports sent to all registered users
+- **Universal Access**: No login required - everyone sees the current day's plan
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 15 with React 19
+- **Styling**: Tailwind CSS
+- **Content Generation**: OpenAI GPT-4
+- **Data Storage**: JSON files (no database needed!)
+- **PDF Generation**: Puppeteer
+- **Email Delivery**: Resend
+- **Hosting**: Vercel with cron jobs
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ 
+- npm or yarn
+- OpenAI API key for content generation
+- Resend account for email delivery (optional for basic usage)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Edit `.env.local` and add your values:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   RESEND_API_KEY=your_resend_api_key_here
+   CRON_SECRET=your_secure_random_string_here
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) to view the dashboard
+
+## Project Structure
+
+```
+wellness-subscription-2/
+├── app/
+│   ├── api/
+│   │   ├── admin/
+│   │   │   └── generate-plan/ # Admin API for manual plan generation
+│   │   ├── daily-plan/        # API for fetching daily plans
+│   │   └── cron/
+│   │       └── daily-plan/    # Cron job for email & PDF generation
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx               # Main dashboard page
+├── lib/
+│   ├── data.ts                # Data structure definitions
+│   ├── storage.ts             # JSON file storage system
+│   └── openai.ts              # OpenAI integration for content generation
+├── data/
+│   └── daily-plans.json       # JSON file storing all daily plans
+├── vercel.json                # Vercel cron configuration
+└── env.example                # Environment variables template
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How It Works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🤖 **AI-Powered Content Generation**
+- Uses OpenAI GPT-4 to generate fresh daily content
+- Creates unique quotes, workout plans, and meal plans every day
+- Falls back to predefined content if OpenAI is unavailable
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 💾 **Simple JSON Storage**
+- No database required - everything stored in `data/daily-plans.json`
+- Automatically creates and manages the data file
+- Easy to backup, version control, and deploy
 
-## Learn More
+### 🔄 **Smart Content Loading**
+- Dashboard automatically generates content if none exists for today
+- Cron job runs daily at 4:00 AM ET to prepare content and send emails
+- Admin API available for manually generating content for specific dates
 
-To learn more about Next.js, take a look at the following resources:
+## API Endpoints
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `GET /api/daily-plan` - Fetch today's plan (auto-generates if missing)
+- `GET /api/daily-plan?date=YYYY-MM-DD` - Fetch plan for specific date
+- `POST /api/cron/daily-plan` - Daily automation (4:00 AM ET)
+- `POST /api/admin/generate-plan` - Manually generate plan for specific date
+- `GET /api/admin/generate-plan?date=YYYY-MM-DD` - Check if plan exists
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment on Vercel
 
-## Deploy on Vercel
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Set environment variables in Vercel dashboard:
+   - `OPENAI_API_KEY`
+   - `RESEND_API_KEY`
+   - `CRON_SECRET`
+4. Deploy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The cron job will automatically run daily at 4:00 AM ET (9:00 AM UTC) as configured in `vercel.json`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Email Configuration
+
+To set up email delivery:
+
+1. Sign up for [Resend](https://resend.com)
+2. Add your domain and verify it
+3. Generate an API key
+4. Update the `from` address in the cron job to use your verified domain
+5. Add user email addresses to the `userEmails` array in the cron job
+
+## Content Management
+
+### ✨ **Automatic Generation**
+The system automatically generates fresh content using OpenAI when no plan exists for the current day.
+
+### 🛠️ **Manual Generation**
+You can manually generate content for specific dates using the admin API:
+
+```bash
+# Generate plan for a specific date
+curl -X POST http://localhost:3000/api/admin/generate-plan \
+  -H "Content-Type: application/json" \
+  -d '{"date": "2024-12-15"}'
+
+# Check if plan exists
+curl "http://localhost:3000/api/admin/generate-plan?date=2024-12-15"
+```
+
+### 📁 **JSON Storage**
+All plans are stored in `data/daily-plans.json`. You can:
+- Back up this file to preserve your content
+- Edit plans manually if needed
+- Version control your wellness content
+- Easily migrate between environments
+
+## Customization
+
+- **Colors**: Modify the Tailwind classes in `app/page.tsx`
+- **AI Prompts**: Customize the OpenAI prompts in `lib/openai.ts`
+- **Email Template**: Customize the HTML in the cron job function
+- **PDF Layout**: Modify the PDF generation HTML in the cron job
+- **Fallback Content**: Update the fallback plans in `lib/openai.ts`
+
+## Testing the Cron Job
+
+You can test the email/PDF generation locally:
+
+```bash
+# Make a POST request to the cron endpoint
+curl -X POST http://localhost:3000/api/cron/daily-plan \
+  -H "Authorization: Bearer your_cron_secret_here"
+```
+
+## License
+
+This project is built for wellness and health promotion. Feel free to use and modify as needed.
