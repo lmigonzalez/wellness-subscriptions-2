@@ -86,14 +86,16 @@ wellness-subscription-2/
 ## How It Works
 
 ### 🤖 **AI-Powered Content Generation**
-- Uses OpenAI GPT-4 to generate fresh daily content
-- Creates unique quotes, workout plans, and meal plans every day
-- Falls back to predefined content if OpenAI is unavailable
+- **Daily Quotes**: Fresh, motivational quotes generated daily with OpenAI GPT-4
+- **Monthly Plans**: Workout and meal plans generated monthly and reused throughout the month
+- **Smart Scheduling**: Quotes change every day, workouts/meals stay consistent monthly
+- **Fallback System**: Predefined content ensures the app always works
 
 ### 💾 **Simple JSON Storage**
-- No database required - everything stored in `data/daily-plans.json`
-- Automatically creates and manages the data file
-- Easy to backup, version control, and deploy
+- **Daily Plans**: Stored in `data/daily-plans.json` (combines daily quotes with monthly content)
+- **Monthly Plans**: Stored in `data/monthly-plans.json` (workout and meal plans by month)
+- **No Database**: Everything uses simple JSON files
+- **Easy Management**: Backup, edit, and version control your wellness content
 
 ### 🔄 **Smart Content Loading**
 - Dashboard automatically generates content if none exists for today
