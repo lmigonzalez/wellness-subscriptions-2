@@ -257,8 +257,14 @@ export async function POST(request: NextRequest) {
     if (!plan) {
       console.log('Generating new daily plan with OpenAI...');
       plan = await generateDailyPlan(today);
-      await savePlan(plan);
-      console.log('Generated and saved new plan for today');
+      
+      // Only try to save in development (production can't write to filesystem)
+      if (process.env.NODE_ENV !== 'production') {
+        await savePlan(plan);
+        console.log('Generated and saved new plan for today');
+      } else {
+        console.log('Generated new plan for today (production - no file save)');
+      }
     } else {
       console.log('Using existing plan for today');
     }

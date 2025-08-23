@@ -41,9 +41,16 @@ export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
 // Get today's plan
 export async function getTodaysPlan(): Promise<DailyPlan | null> {
   const today = new Date().toISOString().split("T")[0];
-  let plan = await getPlanByDate(today);
   
-  // If no plan exists for today, check if we need to generate a new one
+  // In production (Vercel), we can't write to filesystem
+  // So we'll always generate fresh content
+  if (process.env.NODE_ENV === 'production') {
+    const { generateDailyPlan } = await import('./openai');
+    return await generateDailyPlan(today);
+  }
+  
+  // In development, try to load from file first
+  let plan = await getPlanByDate(today);
   if (!plan) {
     const { generateDailyPlan } = await import('./openai');
     plan = await generateDailyPlan(today);

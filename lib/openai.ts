@@ -1,6 +1,5 @@
 import OpenAI from 'openai';
 import { DailyPlan, Exercise, Meal } from './data';
-import { loadMonthlyPlan, saveMonthlyPlan } from './monthly-storage';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
@@ -147,8 +146,16 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
 
 // Helper function to get or generate monthly plan
 async function getOrGenerateMonthlyPlan(monthKey: string) {
-  // Try to load existing monthly plan from storage
+  // In production (Vercel), we can't write to filesystem
+  // So we'll always generate fresh monthly content
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`Generating fresh monthly plan for ${monthKey} in production...`);
+    return await generateMonthlyPlan(monthKey + '-01');
+  }
+  
+  // In development, try to load existing monthly plan from storage
   try {
+    const { loadMonthlyPlan, saveMonthlyPlan } = await import('./monthly-storage');
     let monthlyPlan = await loadMonthlyPlan(monthKey);
     
     if (!monthlyPlan) {

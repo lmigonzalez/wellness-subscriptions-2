@@ -91,16 +91,17 @@ wellness-subscription-2/
 - **Smart Scheduling**: Quotes change every day, workouts/meals stay consistent monthly
 - **Fallback System**: Predefined content ensures the app always works
 
-### 💾 **Simple JSON Storage**
-- **Daily Plans**: Stored in `data/daily-plans.json` (combines daily quotes with monthly content)
-- **Monthly Plans**: Stored in `data/monthly-plans.json` (workout and meal plans by month)
-- **No Database**: Everything uses simple JSON files
-- **Easy Management**: Backup, edit, and version control your wellness content
+### 💾 **Smart Storage Strategy**
+- **Development**: Uses local JSON files for easy testing and development
+- **Production**: Generates fresh content on-demand (no file system access on Vercel)
+- **Hybrid Approach**: Best of both worlds - local persistence + production reliability
+- **No Database Required**: Simple and cost-effective
 
 ### 🔄 **Smart Content Loading**
-- Dashboard automatically generates content if none exists for today
-- Cron job runs daily at 4:00 AM ET to prepare content and send emails
-- Admin API available for manually generating content for specific dates
+- **Development**: Dashboard loads from files, generates new content as needed
+- **Production**: Always generates fresh content for each request (no file system access)
+- **Cron Job**: Runs daily at 4:00 AM ET to prepare content and send emails
+- **Admin API**: Available for manually generating content for specific dates
 
 ### 🔒 **Premium Access Control**
 - Users must have `?is_premium=true` in the URL to access the dashboard
@@ -152,6 +153,25 @@ To integrate with your Shopify store:
    ```
 
 This ensures only verified premium customers can access the wellness content.
+
+## 🚀 **Production Deployment Notes**
+
+### **Vercel Serverless Limitations**
+- **File System**: Read-only in production (cannot create/write files)
+- **Content Generation**: Fresh content generated on each request
+- **No Persistence**: Content not stored between function calls
+
+### **Production Behavior**
+- ✅ **Daily Quotes**: Fresh quote generated for each user visit
+- ✅ **Monthly Plans**: New workout/meal plan generated monthly
+- ✅ **Premium Access**: URL parameter validation works perfectly
+- ✅ **Email & PDF**: Cron jobs function normally
+- ⚠️ **Content Sharing**: Each user gets unique content (not shared across users)
+
+### **Cost Considerations**
+- **OpenAI API**: More calls in production (fresh content each time)
+- **User Experience**: Each premium user gets unique, personalized content
+- **Scalability**: No storage bottlenecks, scales with user demand
 
 ## Email Configuration
 
