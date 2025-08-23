@@ -9,9 +9,8 @@ const PLANS_FILE = path.join(DATA_DIR, "daily-plans.json");
 async function ensureDataDir() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch (error) {
+  } catch {
     // Directory already exists
-    console.log("Data directory already exists");
   }
 }
 
@@ -42,7 +41,16 @@ export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
 // Get today's plan
 export async function getTodaysPlan(): Promise<DailyPlan | null> {
   const today = new Date().toISOString().split("T")[0];
-  return getPlanByDate(today);
+  let plan = await getPlanByDate(today);
+  
+  // If no plan exists for today, check if we need to generate a new one
+  if (!plan) {
+    const { generateDailyPlan } = await import('./openai');
+    plan = await generateDailyPlan(today);
+    await savePlan(plan);
+  }
+  
+  return plan;
 }
 
 // Add or update a plan

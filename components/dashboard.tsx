@@ -250,10 +250,13 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Workout Plan */}
           <section className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 text-emerald-400 flex items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">💪</span>
-              Today&apos;s Workout
+              This Month&apos;s Workout Plan
             </h2>
+            <p className="text-gray-300 text-sm mb-4 italic">
+              🗓️ This workout plan stays consistent throughout {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            </p>
             <div className="space-y-4">
               {plan.workout.map((exercise, index) => (
                 <div key={index} className="bg-gray-700 rounded-lg p-4">
@@ -283,10 +286,13 @@ export default function Dashboard() {
 
           {/* Meal Plan */}
           <section className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold mb-6 text-emerald-400 flex items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">🥗</span>
-              Today&apos;s Meals
+              This Month&apos;s Meal Plan
             </h2>
+            <p className="text-gray-300 text-sm mb-4 italic">
+              🍽️ These recipes are designed for the month of {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            </p>
             <div className="space-y-6">
               {/* Breakfast */}
               <div className="bg-gray-700 rounded-lg p-4">

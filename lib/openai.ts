@@ -1,11 +1,13 @@
 import OpenAI from 'openai';
-import { DailyPlan} from './data';
+import { DailyPlan, Exercise, Meal } from './data';
+import { loadMonthlyPlan, saveMonthlyPlan } from './monthly-storage';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-export async function generateDailyPlan(date: string): Promise<DailyPlan> {
+// Generate only a daily quote
+export async function generateDailyQuote(date: string): Promise<{ text: string; author: string }> {
   const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
   
   try {
@@ -14,17 +16,57 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
       messages: [
         {
           role: "system",
-          content: `You are a wellness expert creating comprehensive daily wellness plans. Generate a complete daily plan with:
-          1. An inspiring quote with author
-          2. 7 varied exercises with proper descriptions, durations, sets, and reps
-          3. 3 healthy meals (breakfast, lunch, dinner) with ingredients and cooking instructions
+          content: `You are a wellness expert creating daily inspirational quotes. Generate a motivational quote about health, wellness, fitness, or personal growth.
           
           Return ONLY valid JSON in this exact format:
           {
-            "quote": {
-              "text": "quote text here",
-              "author": "Author Name"
-            },
+            "text": "inspiring quote text here",
+            "author": "Author Name or 'Unknown' if original"
+          }`
+        },
+        {
+          role: "user",
+          content: `Create an inspiring wellness quote for ${dayOfWeek}, ${date}. 
+          
+          Make it:
+          - Motivational and uplifting
+          - Related to health, wellness, fitness, or personal growth
+          - Appropriate for starting the day with positive energy
+          - Either a famous quote or create an original one
+          
+          Return only the JSON, no other text.`
+        }
+      ],
+      temperature: 0.8,
+      max_tokens: 200,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from OpenAI');
+    }
+
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Error generating daily quote with OpenAI:', error);
+    return getFallbackQuote();
+  }
+}
+
+// Generate monthly workout and meal plans
+export async function generateMonthlyPlan(date: string): Promise<{ workout: Exercise[]; meals: { breakfast: Meal; lunch: Meal; dinner: Meal } }> {
+  const month = new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are a wellness expert creating monthly workout and meal plans. Generate a month-long fitness and nutrition program.
+          
+          Return ONLY valid JSON in this exact format:
+          {
             "workout": [
               {
                 "name": "Exercise Name",
@@ -49,14 +91,17 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
         },
         {
           role: "user",
-          content: `Create a wellness plan for ${dayOfWeek}, ${date}. 
+          content: `Create a comprehensive wellness plan for ${month}. 
           
-          Make it:
-          - Motivational and energizing
-          - Include 7 diverse exercises (mix of cardio, strength, flexibility)
-          - 3 nutritious meals with realistic portions and clear cooking steps
-          - Appropriate for general fitness levels
+          Generate:
+          - 7 varied exercises (mix of cardio, strength, flexibility, core work)
+          - Each exercise should be suitable for daily repetition throughout the month
+          - 3 nutritious meals (breakfast, lunch, dinner) with seasonal ingredients when possible
+          - Meals should be balanced, realistic, and provide sustained energy
           - Focus on whole foods and balanced nutrition
+          - Appropriate for general fitness levels
+          
+          This plan will be used for the entire month, so make exercises that can be done consistently.
           
           Return only the JSON, no other text.`
         }
@@ -70,42 +115,77 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
       throw new Error('No content generated from OpenAI');
     }
 
-    // Parse the JSON response
-    const generatedContent = JSON.parse(content);
-    
-    // Create the full daily plan
-    const dailyPlan: DailyPlan = {
-      date,
-      quote: generatedContent.quote,
-      workout: generatedContent.workout,
-      meals: generatedContent.meals
-    };
-
-    return dailyPlan;
-    
+    return JSON.parse(content);
   } catch (error) {
-    console.error('Error generating daily plan with OpenAI:', error);
+    console.error('Error generating monthly plan with OpenAI:', error);
+    return getFallbackMonthlyPlan();
+  }
+}
+
+// Main function to generate daily plan (combines daily quote with monthly workout/meals)
+export async function generateDailyPlan(date: string): Promise<DailyPlan> {
+  const monthKey = new Date(date).toISOString().slice(0, 7); // YYYY-MM format
+  
+  try {
+    // Get daily quote
+    const quote = await generateDailyQuote(date);
     
-    // Fallback plan if OpenAI fails
+    // Get or generate monthly plan
+    const monthlyPlan = await getOrGenerateMonthlyPlan(monthKey);
+    
+    return {
+      date,
+      quote,
+      workout: monthlyPlan.workout,
+      meals: monthlyPlan.meals
+    };
+  } catch (error) {
+    console.error('Error generating daily plan:', error);
     return getFallbackPlan(date);
   }
 }
 
-// Fallback plan in case OpenAI is unavailable
-function getFallbackPlan(date: string): DailyPlan {
+// Helper function to get or generate monthly plan
+async function getOrGenerateMonthlyPlan(monthKey: string) {
+  // Try to load existing monthly plan from storage
+  try {
+    let monthlyPlan = await loadMonthlyPlan(monthKey);
+    
+    if (!monthlyPlan) {
+      // Generate new monthly plan
+      console.log(`Generating new monthly plan for ${monthKey}...`);
+      monthlyPlan = await generateMonthlyPlan(monthKey + '-01'); // Use first day of month
+      await saveMonthlyPlan(monthKey, monthlyPlan);
+      console.log(`Generated and saved monthly plan for ${monthKey}`);
+    }
+    
+    return monthlyPlan;
+  } catch (error) {
+    console.error('Error with monthly plan storage:', error);
+    return getFallbackMonthlyPlan();
+  }
+}
+
+// Fallback quote if OpenAI is unavailable
+function getFallbackQuote(): { text: string; author: string } {
   const quotes = [
     { text: "The groundwork for all happiness is good health.", author: "Leigh Hunt" },
     { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
     { text: "A healthy outside starts from the inside.", author: "Robert Urich" },
     { text: "Health is not about the weight you lose, but about the life you gain.", author: "Dr. Josh Axe" },
-    { text: "Your body can stand almost anything. It's your mind you have to convince.", author: "Unknown" }
+    { text: "Your body can stand almost anything. It's your mind you have to convince.", author: "Unknown" },
+    { text: "The first wealth is health.", author: "Ralph Waldo Emerson" },
+    { text: "To keep the body in good health is a duty... otherwise we shall not be able to keep our mind strong and clear.", author: "Buddha" }
   ];
+  
+  const today = new Date();
+  const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+  return quotes[dayOfYear % quotes.length];
+}
 
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-
+// Fallback monthly plan if OpenAI is unavailable
+function getFallbackMonthlyPlan(): { workout: Exercise[]; meals: { breakfast: Meal; lunch: Meal; dinner: Meal } } {
   return {
-    date,
-    quote: randomQuote,
     workout: [
       {
         name: "Morning Stretch",
@@ -218,5 +298,18 @@ function getFallbackPlan(date: string): DailyPlan {
         ]
       }
     }
+  };
+}
+
+// Fallback plan in case OpenAI is unavailable
+function getFallbackPlan(date: string): DailyPlan {
+  const quote = getFallbackQuote();
+  const monthlyPlan = getFallbackMonthlyPlan();
+
+  return {
+    date,
+    quote,
+    workout: monthlyPlan.workout,
+    meals: monthlyPlan.meals
   };
 }
