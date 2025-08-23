@@ -1,9 +1,9 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { DailyPlan } from './data';
+import { promises as fs } from "fs";
+import path from "path";
+import { DailyPlan } from "./data";
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const PLANS_FILE = path.join(DATA_DIR, 'daily-plans.json');
+const DATA_DIR = path.join(process.cwd(), "data");
+const PLANS_FILE = path.join(DATA_DIR, "daily-plans.json");
 
 // Ensure data directory exists
 async function ensureDataDir() {
@@ -11,6 +11,7 @@ async function ensureDataDir() {
     await fs.mkdir(DATA_DIR, { recursive: true });
   } catch (error) {
     // Directory already exists
+    console.log("Data directory already exists");
   }
 }
 
@@ -18,9 +19,9 @@ async function ensureDataDir() {
 export async function loadPlans(): Promise<DailyPlan[]> {
   try {
     await ensureDataDir();
-    const data = await fs.readFile(PLANS_FILE, 'utf-8');
+    const data = await fs.readFile(PLANS_FILE, "utf-8");
     return JSON.parse(data);
-  } catch (error) {
+  } catch {
     // File doesn't exist or is invalid, return empty array
     return [];
   }
@@ -35,29 +36,29 @@ export async function savePlans(plans: DailyPlan[]): Promise<void> {
 // Get plan by date
 export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
   const plans = await loadPlans();
-  return plans.find(plan => plan.date === date) || null;
+  return plans.find((plan) => plan.date === date) || null;
 }
 
 // Get today's plan
 export async function getTodaysPlan(): Promise<DailyPlan | null> {
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
   return getPlanByDate(today);
 }
 
 // Add or update a plan
 export async function savePlan(plan: DailyPlan): Promise<void> {
   const plans = await loadPlans();
-  const existingIndex = plans.findIndex(p => p.date === plan.date);
-  
+  const existingIndex = plans.findIndex((p) => p.date === plan.date);
+
   if (existingIndex >= 0) {
     plans[existingIndex] = plan;
   } else {
     plans.push(plan);
   }
-  
+
   // Sort plans by date
   plans.sort((a, b) => a.date.localeCompare(b.date));
-  
+
   await savePlans(plans);
 }
 

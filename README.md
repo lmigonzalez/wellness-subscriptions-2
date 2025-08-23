@@ -4,10 +4,11 @@ A standalone single-page wellness application that displays daily wellness plans
 
 ## Features
 
+- **Premium Access Control**: Only premium users with `?is_premium=true` can access the dashboard
 - **Dark-themed Dashboard**: Beautiful, responsive design displaying daily wellness content
 - **Daily Auto-Update**: Content refreshes automatically at 4:00 AM ET
 - **Email Notifications**: Daily PDF reports sent to all registered users
-- **Universal Access**: No login required - everyone sees the current day's plan
+- **AI-Generated Content**: Fresh quotes, workouts, and meal plans powered by OpenAI
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 
 ## Tech Stack
@@ -54,7 +55,9 @@ A standalone single-page wellness application that displays daily wellness plans
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) to view the dashboard
+5. Open [http://localhost:3000?is_premium=true](http://localhost:3000?is_premium=true) to view the dashboard
+
+   **Note**: Without the `is_premium=true` parameter, users will see a premium upgrade page.
 
 ## Project Structure
 
@@ -97,6 +100,11 @@ wellness-subscription-2/
 - Cron job runs daily at 4:00 AM ET to prepare content and send emails
 - Admin API available for manually generating content for specific dates
 
+### 🔒 **Premium Access Control**
+- Users must have `?is_premium=true` in the URL to access the dashboard
+- Non-premium users see an attractive upgrade page with feature highlights
+- Perfect for Shopify integration where premium status is verified
+
 ## API Endpoints
 
 - `GET /api/daily-plan` - Fetch today's plan (auto-generates if missing)
@@ -116,6 +124,32 @@ wellness-subscription-2/
 4. Deploy!
 
 The cron job will automatically run daily at 4:00 AM ET (9:00 AM UTC) as configured in `vercel.json`.
+
+## Shopify Integration
+
+To integrate with your Shopify store:
+
+1. **Create a Premium Product/Subscription** in your Shopify store
+2. **Add a Custom Link** on your Shopify pages that directs premium customers to:
+   ```
+   https://your-wellness-app.vercel.app?is_premium=true
+   ```
+3. **Use Shopify's Customer Tags** or subscription status to conditionally show the link
+4. **Example Shopify Liquid Code**:
+   ```liquid
+   {% if customer.tags contains 'premium' or customer.has_subscription %}
+     <a href="https://your-wellness-app.vercel.app?is_premium=true" 
+        class="btn btn-primary">
+       Access Your Daily Wellness Dashboard
+     </a>
+   {% else %}
+     <a href="/pages/premium-upgrade" class="btn btn-secondary">
+       Upgrade to Premium
+     </a>
+   {% endif %}
+   ```
+
+This ensures only verified premium customers can access the wellness content.
 
 ## Email Configuration
 

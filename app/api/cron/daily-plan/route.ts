@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodaysPlan, savePlan, planExists } from '@/lib/storage';
+import { getTodaysPlan, savePlan } from '@/lib/storage';
 import { generateDailyPlan } from '@/lib/openai';
+import { DailyPlan } from '@/lib/data';
 import puppeteer from 'puppeteer';
 import { Resend } from 'resend';
 
@@ -11,7 +12,7 @@ const userEmails = [
   'user@example.com', // Replace with actual email addresses
 ];
 
-async function generatePDF(plan: any) {
+async function generatePDF(plan: DailyPlan) {
   const browser = await puppeteer.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -63,7 +64,7 @@ async function generatePDF(plan: any) {
                 Today's Workout
               </h2>
               <div class="grid gap-4">
-                ${plan.workout.map((exercise: any, index: number) => `
+                ${plan.workout.map((exercise) => `
                   <div class="bg-gray-800 rounded-lg p-4">
                     <h3 class="font-semibold text-lg text-white mb-2">${exercise.name}</h3>
                     <p class="text-gray-300 mb-2">${exercise.description}</p>
@@ -167,13 +168,13 @@ async function generatePDF(plan: any) {
       }
     });
 
-    return pdfBuffer;
+    return Buffer.from(pdfBuffer);
   } finally {
     await browser.close();
   }
 }
 
-async function sendDailyEmail(plan: any, pdfBuffer: Buffer) {
+async function sendDailyEmail(plan: DailyPlan, pdfBuffer: Buffer) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -198,7 +199,7 @@ async function sendDailyEmail(plan: any, pdfBuffer: Buffer) {
         <h2 style="color: #10b981; margin-bottom: 15px;">💪 Today's Workout</h2>
         <p style="color: #d1d5db; margin-bottom: 15px;">Your workout includes ${plan.workout.length} exercises designed to keep you active and healthy.</p>
         <ul style="color: #d1d5db; list-style: none; padding: 0;">
-          ${plan.workout.slice(0, 3).map((exercise: any) => `
+          ${plan.workout.slice(0, 3).map((exercise) => `
             <li style="margin-bottom: 8px;">• ${exercise.name} - ${exercise.duration}</li>
           `).join('')}
           ${plan.workout.length > 3 ? `<li style="color: #10b981;">...and ${plan.workout.length - 3} more exercises</li>` : ''}
