@@ -8,6 +8,8 @@ const openai = new OpenAI({
 // Generate only a daily quote
 export async function generateDailyQuote(date: string): Promise<{ text: string; author: string }> {
   const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+  const month = new Date(date).toLocaleDateString('en-US', { month: 'long' });
+  const day = new Date(date).getDate();
   
   try {
     const completion = await openai.chat.completions.create({
@@ -21,22 +23,30 @@ export async function generateDailyQuote(date: string): Promise<{ text: string; 
           {
             "text": "inspiring quote text here",
             "author": "Author Name or 'Unknown' if original"
-          }`
+          }
+          
+          Make sure the quote is:
+          - Unique and inspiring for the specific day
+          - Related to health, wellness, fitness, or personal growth
+          - Appropriate for starting the day with positive energy
+          - Either a famous quote or create an original one
+          - Different from common wellness quotes`
         },
         {
           role: "user",
-          content: `Create an inspiring wellness quote for ${dayOfWeek}, ${date}. 
+          content: `Create an inspiring wellness quote for ${dayOfWeek}, ${month} ${day}, ${date}. 
           
           Make it:
           - Motivational and uplifting
           - Related to health, wellness, fitness, or personal growth
           - Appropriate for starting the day with positive energy
           - Either a famous quote or create an original one
+          - Unique and fresh for this specific day
           
           Return only the JSON, no other text.`
         }
       ],
-      temperature: 0.8,
+      temperature: 0.9,
       max_tokens: 200,
     });
 
@@ -45,16 +55,27 @@ export async function generateDailyQuote(date: string): Promise<{ text: string; 
       throw new Error('No content generated from OpenAI');
     }
 
-    return JSON.parse(content);
+    // Try to parse the JSON response
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.text && parsed.author) {
+        return parsed;
+      }
+      throw new Error('Invalid quote format');
+    } catch {
+      console.error('Failed to parse OpenAI response:', content);
+      throw new Error('Invalid response format from OpenAI');
+    }
   } catch (error) {
     console.error('Error generating daily quote with OpenAI:', error);
-    return getFallbackQuote();
+    return getFallbackQuote(date);
   }
 }
 
-// Generate monthly workout and meal plans
-export async function generateMonthlyPlan(date: string): Promise<{ workout: Exercise[]; meals: { breakfast: Meal; lunch: Meal; dinner: Meal } }> {
-  const month = new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+// Generate daily workout and monthly meal plans
+export async function generateDailyWorkout(date: string): Promise<Exercise[]> {
+  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
+  const dayOfMonth = new Date(date).getDate();
   
   try {
     const completion = await openai.chat.completions.create({
@@ -62,51 +83,50 @@ export async function generateMonthlyPlan(date: string): Promise<{ workout: Exer
       messages: [
         {
           role: "system",
-          content: `You are a wellness expert creating monthly workout and meal plans. Generate a month-long fitness and nutrition program.
+          content: `You are a fitness expert creating daily home workout routines. Generate exactly 7 bodyweight exercises that can be done at home with no equipment.
           
           Return ONLY valid JSON in this exact format:
-          {
-            "workout": [
-              {
-                "name": "Exercise Name",
-                "description": "Description of the exercise",
-                "duration": "Duration/time",
-                "sets": "3" (optional),
-                "reps": "10-15" (optional)
-              }
-            ],
-            "meals": {
-              "breakfast": {
-                "name": "Meal Name",
-                "description": "Brief description",
-                "calories": 450,
-                "ingredients": ["ingredient 1", "ingredient 2"],
-                "instructions": ["step 1", "step 2"]
-              },
-              "lunch": { same format },
-              "dinner": { same format }
+          [
+            {
+              "name": "Exercise Name",
+              "description": "Clear description of proper form and technique",
+              "duration": "Total time or set duration",
+              "sets": "3",
+              "reps": "10-15"
             }
-          }`
+          ]
+          
+          REQUIREMENTS:
+          - Exactly 7 exercises
+          - All bodyweight/home exercises (no equipment needed)
+          - Must include: planks, sit-ups/crunches, push-ups
+          - Add 4 more exercises like squats, lunges, jumping jacks, burpees, mountain climbers, etc.
+          - Each exercise must have sets and reps specified
+          - Vary the intensity and muscle groups
+          - Suitable for all fitness levels with modifications mentioned`
         },
         {
           role: "user",
-          content: `Create a comprehensive wellness plan for ${month}. 
+          content: `Create a daily home workout for ${dayOfWeek}, day ${dayOfMonth} of the month.
           
-          Generate:
-          - 7 varied exercises (mix of cardio, strength, flexibility, core work)
-          - Each exercise should be suitable for daily repetition throughout the month
-          - 3 nutritious meals (breakfast, lunch, dinner) with seasonal ingredients when possible
-          - Meals should be balanced, realistic, and provide sustained energy
-          - Focus on whole foods and balanced nutrition
-          - Appropriate for general fitness levels
+          Generate exactly 7 bodyweight exercises:
+          1. Must include: Planks (with duration)
+          2. Must include: Sit-ups or Crunches (with sets/reps)
+          3. Must include: Push-ups (with sets/reps)
+          4-7. Add 4 more varied home exercises like squats, lunges, jumping jacks, burpees, mountain climbers, etc.
           
-          This plan will be used for the entire month, so make exercises that can be done consistently.
+          Requirements:
+          - All exercises doable at home with no equipment
+          - Clear sets and reps for each
+          - Mix of cardio, strength, and core
+          - Beginner to intermediate difficulty
+          - Total workout should take 20-30 minutes
           
-          Return only the JSON, no other text.`
+          Return only the JSON array, no other text.`
         }
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.8,
+      max_tokens: 1000,
     });
 
     const content = completion.choices[0]?.message?.content;
@@ -114,29 +134,121 @@ export async function generateMonthlyPlan(date: string): Promise<{ workout: Exer
       throw new Error('No content generated from OpenAI');
     }
 
-    return JSON.parse(content);
+    // Try to parse the JSON response
+    try {
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length === 7) {
+        return parsed;
+      }
+      throw new Error('Invalid workout format - must be exactly 7 exercises');
+    } catch {
+      console.error('Failed to parse OpenAI workout response:', content);
+      throw Error('Invalid response format from OpenAI');
+    }
   } catch (error) {
-    console.error('Error generating monthly plan with OpenAI:', error);
-    return getFallbackMonthlyPlan();
+    console.error('Error generating daily workout with OpenAI:', error);
+    return getFallbackDailyWorkout();
   }
 }
 
-// Main function to generate daily plan (combines daily quote with monthly workout/meals)
+// Generate monthly meal plans (keeping meals monthly for consistency)
+export async function generateMonthlyMeals(date: string): Promise<{ breakfast: Meal; lunch: Meal; dinner: Meal }> {
+  const month = new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const season = getSeason(date);
+  
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are a nutrition expert creating monthly meal plans. Generate 3 nutritious meals for the month.
+          
+          Return ONLY valid JSON in this exact format:
+          {
+            "breakfast": {
+              "name": "Meal Name",
+              "description": "Brief description",
+              "calories": 450,
+              "ingredients": ["ingredient 1", "ingredient 2"],
+              "instructions": ["step 1", "step 2"]
+            },
+            "lunch": { same format },
+            "dinner": { same format }
+          }`
+        },
+        {
+          role: "user",
+          content: `Create nutritious meals for ${month} (${season} season). 
+          
+          Generate:
+          - 3 nutritious meals (breakfast, lunch, dinner) with seasonal ingredients for ${season}
+          - Meals should be balanced, realistic, and provide sustained energy
+          - Focus on whole foods and balanced nutrition
+          - Consider seasonal availability for ${season}
+          - Appropriate for general dietary needs
+          
+          Return only the JSON, no other text.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from OpenAI');
+    }
+
+    // Try to parse the JSON response
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed.breakfast && parsed.lunch && parsed.dinner) {
+        return parsed;
+      }
+      throw new Error('Invalid meal plan format');
+    } catch {
+      console.error('Failed to parse OpenAI meals response:', content);
+      throw new Error('Invalid response format from OpenAI');
+    }
+  } catch (error) {
+    console.error('Error generating monthly meals with OpenAI:', error);
+    return getFallbackMonthlyMeals();
+  }
+}
+
+// Helper function to determine season
+function getSeason(date: string): string {
+  const month = new Date(date).getMonth();
+  if (month >= 2 && month <= 4) return 'spring';
+  if (month >= 5 && month <= 7) return 'summer';
+  if (month >= 8 && month <= 10) return 'fall';
+  return 'winter';
+}
+
+// Main function to generate daily plan (combines daily quote and workout with monthly meals)
 export async function generateDailyPlan(date: string): Promise<DailyPlan> {
   const monthKey = new Date(date).toISOString().slice(0, 7); // YYYY-MM format
   
   try {
     // Get daily quote
+    console.log(`Generating daily quote for ${date}...`);
     const quote = await generateDailyQuote(date);
+    console.log(`Generated quote: "${quote.text}" by ${quote.author}`);
     
-    // Get or generate monthly plan
-    const monthlyPlan = await getOrGenerateMonthlyPlan(monthKey);
+    // Get daily workout
+    console.log(`Generating daily workout for ${date}...`);
+    const workout = await generateDailyWorkout(date);
+    console.log(`Generated daily workout with ${workout.length} exercises`);
+    
+    // Get or generate monthly meals
+    const monthlyMeals = await getOrGenerateMonthlyMeals(monthKey);
     
     return {
       date,
       quote,
-      workout: monthlyPlan.workout,
-      meals: monthlyPlan.meals
+      workout,
+      meals: monthlyMeals
     };
   } catch (error) {
     console.error('Error generating daily plan:', error);
@@ -144,37 +256,40 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
   }
 }
 
-// Helper function to get or generate monthly plan
-async function getOrGenerateMonthlyPlan(monthKey: string) {
+// Helper function to get or generate monthly meals
+async function getOrGenerateMonthlyMeals(monthKey: string) {
   // In production (Vercel), we can't write to filesystem
   // So we'll always generate fresh monthly content
   if (process.env.NODE_ENV === 'production') {
-    console.log(`Generating fresh monthly plan for ${monthKey} in production...`);
-    return await generateMonthlyPlan(monthKey + '-01');
+    console.log(`Generating fresh monthly meals for ${monthKey} in production...`);
+    return await generateMonthlyMeals(monthKey + '-01');
   }
   
-  // In development, try to load existing monthly plan from storage
+  // In development, try to load existing monthly meals from storage
   try {
     const { loadMonthlyPlan, saveMonthlyPlan } = await import('./monthly-storage');
-    let monthlyPlan = await loadMonthlyPlan(monthKey);
+    const monthlyPlan = await loadMonthlyPlan(monthKey);
     
-    if (!monthlyPlan) {
-      // Generate new monthly plan
-      console.log(`Generating new monthly plan for ${monthKey}...`);
-      monthlyPlan = await generateMonthlyPlan(monthKey + '-01'); // Use first day of month
-      await saveMonthlyPlan(monthKey, monthlyPlan);
-      console.log(`Generated and saved monthly plan for ${monthKey}`);
+    if (!monthlyPlan || !monthlyPlan.meals) {
+      // Generate new monthly meals
+      console.log(`Generating new monthly meals for ${monthKey}...`);
+      const monthlyMeals = await generateMonthlyMeals(monthKey + '-01'); // Use first day of month
+      const planToSave = { meals: monthlyMeals, workout: [] }; // Save meals in the existing structure
+      await saveMonthlyPlan(monthKey, planToSave);
+      console.log(`Generated and saved monthly meals for ${monthKey}`);
+      return monthlyMeals;
+    } else {
+      console.log(`Loaded existing monthly meals for ${monthKey}`);
+      return monthlyPlan.meals;
     }
-    
-    return monthlyPlan;
   } catch (error) {
-    console.error('Error with monthly plan storage:', error);
-    return getFallbackMonthlyPlan();
+    console.error('Error with monthly meals storage:', error);
+    return getFallbackMonthlyMeals();
   }
 }
 
-// Fallback quote if OpenAI is unavailable
-function getFallbackQuote(): { text: string; author: string } {
+// Fallback quote if OpenAI is unavailable - now includes date-based variation
+function getFallbackQuote(date: string): { text: string; author: string } {
   const quotes = [
     { text: "The groundwork for all happiness is good health.", author: "Leigh Hunt" },
     { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
@@ -182,141 +297,156 @@ function getFallbackQuote(): { text: string; author: string } {
     { text: "Health is not about the weight you lose, but about the life you gain.", author: "Dr. Josh Axe" },
     { text: "Your body can stand almost anything. It's your mind you have to convince.", author: "Unknown" },
     { text: "The first wealth is health.", author: "Ralph Waldo Emerson" },
-    { text: "To keep the body in good health is a duty... otherwise we shall not be able to keep our mind strong and clear.", author: "Buddha" }
+    { text: "To keep the body in good health is a duty... otherwise we shall not be able to keep our mind strong and clear.", author: "Buddha" },
+    { text: "Every morning is a fresh start, an opportunity to nourish your body, cultivate your mind, and strengthen your spirit.", author: "Unknown" },
+    { text: "Wellness is the complete integration of body, mind, and spirit.", author: "Greg Anderson" },
+    { text: "The greatest wealth is health.", author: "Virgil" },
+    { text: "A journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+    { text: "Your health is an investment, not an expense.", author: "Unknown" }
   ];
   
-  const today = new Date();
+  // Use date to ensure consistent but varied quotes
+  const today = new Date(date);
   const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
   return quotes[dayOfYear % quotes.length];
 }
 
-// Fallback monthly plan if OpenAI is unavailable
-function getFallbackMonthlyPlan(): { workout: Exercise[]; meals: { breakfast: Meal; lunch: Meal; dinner: Meal } } {
+// Fallback daily workout if OpenAI is unavailable
+function getFallbackDailyWorkout(): Exercise[] {
+  return [
+    {
+      name: "Plank",
+      description: "Hold your body straight like a board, engaging your core muscles",
+      duration: "3 sets",
+      sets: "3",
+      reps: "30-60 seconds"
+    },
+    {
+      name: "Push-ups",
+      description: "Classic upper body strength exercise. Modify on knees if needed",
+      duration: "3 sets",
+      sets: "3",
+      reps: "8-15"
+    },
+    {
+      name: "Sit-ups",
+      description: "Core strengthening exercise. Keep your feet flat on the ground",
+      duration: "3 sets",
+      sets: "3",
+      reps: "10-20"
+    },
+    {
+      name: "Squats",
+      description: "Lower body strength. Keep your chest up and knees behind toes",
+      duration: "3 sets",
+      sets: "3",
+      reps: "12-20"
+    },
+    {
+      name: "Lunges",
+      description: "Alternate legs for balance and strength training",
+      duration: "3 sets",
+      sets: "3",
+      reps: "10 each leg"
+    },
+    {
+      name: "Jumping Jacks",
+      description: "Full body cardio exercise to get your heart rate up",
+      duration: "3 sets",
+      sets: "3",
+      reps: "30 seconds"
+    },
+    {
+      name: "Mountain Climbers",
+      description: "High-intensity core and cardio exercise in plank position",
+      duration: "3 sets",
+      sets: "3",
+      reps: "20 seconds"
+    }
+  ];
+}
+
+// Fallback monthly meals if OpenAI is unavailable
+function getFallbackMonthlyMeals(): { breakfast: Meal; lunch: Meal; dinner: Meal } {
   return {
-    workout: [
-      {
-        name: "Morning Stretch",
-        description: "Full body stretching routine to start your day",
-        duration: "10 minutes"
-      },
-      {
-        name: "Push-ups",
-        description: "Classic upper body strength exercise",
-        duration: "3 sets",
-        sets: "3",
-        reps: "10-15"
-      },
-      {
-        name: "Squats",
-        description: "Lower body strength and mobility",
-        duration: "3 sets",
-        sets: "3",
-        reps: "15-20"
-      },
-      {
-        name: "Plank",
-        description: "Core strengthening exercise",
-        duration: "3 sets",
-        sets: "3",
-        reps: "30-60 seconds"
-      },
-      {
-        name: "Jumping Jacks",
-        description: "Cardio warm-up exercise",
-        duration: "2 minutes"
-      },
-      {
-        name: "Lunges",
-        description: "Single leg strength and balance",
-        duration: "3 sets",
-        sets: "3",
-        reps: "10 each leg"
-      },
-      {
-        name: "Cool Down Walk",
-        description: "Gentle walking to cool down",
-        duration: "5 minutes"
-      }
-    ],
-    meals: {
-      breakfast: {
-        name: "Protein Power Bowl",
-        description: "Nutritious start with protein and healthy fats",
-        calories: 450,
-        ingredients: [
-          "2 eggs",
-          "1/2 avocado",
-          "1 slice whole grain toast",
-          "1 cup spinach",
-          "1 tbsp olive oil",
-          "Salt and pepper to taste"
-        ],
-        instructions: [
-          "Heat olive oil in a pan over medium heat",
-          "Sauté spinach until wilted",
-          "Scramble eggs and add to pan",
-          "Toast bread and top with sliced avocado",
-          "Serve eggs over spinach with toast on the side"
-        ]
-      },
-      lunch: {
-        name: "Mediterranean Quinoa Salad",
-        description: "Fresh and filling Mediterranean-inspired salad",
-        calories: 520,
-        ingredients: [
-          "1 cup cooked quinoa",
-          "1/2 cucumber, diced",
-          "1/2 cup cherry tomatoes",
-          "1/4 cup red onion",
-          "1/4 cup feta cheese",
-          "2 tbsp olive oil",
-          "1 tbsp lemon juice",
-          "Fresh herbs (parsley, mint)"
-        ],
-        instructions: [
-          "Cook quinoa according to package instructions and let cool",
-          "Dice cucumber, halve cherry tomatoes, and slice red onion",
-          "Combine quinoa with vegetables and feta",
-          "Whisk olive oil and lemon juice for dressing",
-          "Toss salad with dressing and fresh herbs"
-        ]
-      },
-      dinner: {
-        name: "Grilled Salmon with Roasted Vegetables",
-        description: "Omega-3 rich salmon with colorful roasted vegetables",
-        calories: 580,
-        ingredients: [
-          "6 oz salmon fillet",
-          "1 cup broccoli florets",
-          "1 bell pepper, sliced",
-          "1/2 zucchini, sliced",
-          "2 tbsp olive oil",
-          "1 lemon",
-          "Garlic powder",
-          "Salt and pepper"
-        ],
-        instructions: [
-          "Preheat oven to 425°F",
-          "Toss vegetables with 1 tbsp olive oil, salt, and pepper",
-          "Roast vegetables for 20 minutes",
-          "Season salmon with lemon, garlic powder, salt, and pepper",
-          "Grill salmon for 4-5 minutes per side",
-          "Serve salmon over roasted vegetables"
-        ]
-      }
+    breakfast: {
+      name: "Protein Power Bowl",
+      description: "Nutritious start with protein and healthy fats",
+      calories: 450,
+      ingredients: [
+        "2 eggs",
+        "1/2 avocado",
+        "1 slice whole grain toast",
+        "1 cup spinach",
+        "1 tbsp olive oil",
+        "Salt and pepper to taste"
+      ],
+      instructions: [
+        "Heat olive oil in a pan over medium heat",
+        "Sauté spinach until wilted",
+        "Scramble eggs and add to pan",
+        "Toast bread and top with sliced avocado",
+        "Serve eggs over spinach with toast on the side"
+      ]
+    },
+    lunch: {
+      name: "Mediterranean Quinoa Salad",
+      description: "Fresh and filling Mediterranean-inspired salad",
+      calories: 520,
+      ingredients: [
+        "1 cup cooked quinoa",
+        "1/2 cucumber, diced",
+        "1/2 cup cherry tomatoes",
+        "1/4 cup red onion",
+        "1/4 cup feta cheese",
+        "2 tbsp olive oil",
+        "1 tbsp lemon juice",
+        "Fresh herbs (parsley, mint)"
+      ],
+      instructions: [
+        "Cook quinoa according to package instructions and let cool",
+        "Dice cucumber, halve cherry tomatoes, and slice red onion",
+        "Combine quinoa with vegetables and feta",
+        "Whisk olive oil and lemon juice for dressing",
+        "Toss salad with dressing and fresh herbs"
+      ]
+    },
+    dinner: {
+      name: "Grilled Salmon with Roasted Vegetables",
+      description: "Omega-3 rich salmon with colorful roasted vegetables",
+      calories: 580,
+      ingredients: [
+        "6 oz salmon fillet",
+        "1 cup broccoli florets",
+        "1 bell pepper, sliced",
+        "1/2 zucchini, sliced",
+        "2 tbsp olive oil",
+        "1 lemon",
+        "Garlic powder",
+        "Salt and pepper"
+      ],
+      instructions: [
+        "Preheat oven to 425°F",
+        "Toss vegetables with 1 tbsp olive oil, salt, and pepper",
+        "Roast vegetables for 20 minutes",
+        "Season salmon with lemon, garlic powder, salt, and pepper",
+        "Grill salmon for 4-5 minutes per side",
+        "Serve salmon over roasted vegetables"
+      ]
     }
   };
 }
 
 // Fallback plan in case OpenAI is unavailable
 function getFallbackPlan(date: string): DailyPlan {
-  const quote = getFallbackQuote();
-  const monthlyPlan = getFallbackMonthlyPlan();
+  const quote = getFallbackQuote(date);
+  const dailyWorkout = getFallbackDailyWorkout();
+  const monthlyMeals = getFallbackMonthlyMeals();
 
   return {
     date,
     quote,
-    workout: monthlyPlan.workout,
-    meals: monthlyPlan.meals
+    workout: dailyWorkout,
+    meals: monthlyMeals
   };
 }

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-monthly-plans": "node scripts/generate-monthly-plans.js",
+    "test-wellness": "node scripts/test-wellness-system.js"
   },
   "dependencies": {
     "next": "15.5.0",

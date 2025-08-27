@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTodaysPlan, savePlan } from '@/lib/storage';
+import { savePlan } from '@/lib/storage';
 import { generateDailyPlan } from '@/lib/openai';
 import { DailyPlan } from '@/lib/data';
 import puppeteer from 'puppeteer';
@@ -7,10 +7,13 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Sample user email list - in production, this would come from a database
-const userEmails = [
-  'user@example.com', // Replace with actual email addresses
-];
+// User email list - in production, this would come from a database
+// You can add multiple emails separated by commas in the environment variable
+const userEmails = process.env.USER_EMAILS 
+  ? process.env.USER_EMAILS.split(',').map(email => email.trim())
+  : [
+      'user@example.com', // Replace with actual email addresses
+    ];
 
 async function generatePDF(plan: DailyPlan) {
   const browser = await puppeteer.launch({
@@ -61,8 +64,9 @@ async function generatePDF(plan: DailyPlan) {
             <section class="mb-8">
               <h2 class="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
                 <span class="mr-3">💪</span>
-                Today's Workout
+                Today's Home Workout
               </h2>
+              <p class="text-gray-300 text-sm mb-4 italic">🏠 Fresh daily bodyweight exercises • No equipment needed</p>
               <div class="grid gap-4">
                 ${plan.workout.map((exercise) => `
                   <div class="bg-gray-800 rounded-lg p-4">
@@ -196,11 +200,11 @@ async function sendDailyEmail(plan: DailyPlan, pdfBuffer: Buffer) {
       </div>
 
       <div style="margin-bottom: 30px;">
-        <h2 style="color: #10b981; margin-bottom: 15px;">💪 Today's Workout</h2>
-        <p style="color: #d1d5db; margin-bottom: 15px;">Your workout includes ${plan.workout.length} exercises designed to keep you active and healthy.</p>
+        <h2 style="color: #10b981; margin-bottom: 15px;">💪 Today's Home Workout</h2>
+        <p style="color: #d1d5db; margin-bottom: 15px;">Fresh daily workout with ${plan.workout.length} bodyweight exercises - no equipment needed!</p>
         <ul style="color: #d1d5db; list-style: none; padding: 0;">
           ${plan.workout.slice(0, 3).map((exercise) => `
-            <li style="margin-bottom: 8px;">• ${exercise.name} - ${exercise.duration}</li>
+            <li style="margin-bottom: 8px;">• ${exercise.name} - ${exercise.sets ? exercise.sets + ' sets' : ''} ${exercise.reps ? exercise.reps + ' reps' : ''}</li>
           `).join('')}
           ${plan.workout.length > 3 ? `<li style="color: #10b981;">...and ${plan.workout.length - 3} more exercises</li>` : ''}
         </ul>
@@ -247,47 +251,68 @@ export async function POST(request: NextRequest) {
     // Verify this is a legitimate cron request (in production, you'd verify the cron secret)
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      console.error('Unauthorized cron request attempt');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const today = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString();
+    console.log(`🚀 Daily wellness cron job triggered at ${timestamp} for ${today}`);
     
-    // Generate new plan for today if it doesn't exist
-    let plan = await getTodaysPlan();
-    if (!plan) {
-      console.log('Generating new daily plan with OpenAI...');
-      plan = await generateDailyPlan(today);
-      
-      // Only try to save in development (production can't write to filesystem)
-      if (process.env.NODE_ENV !== 'production') {
-        await savePlan(plan);
-        console.log('Generated and saved new plan for today');
-      } else {
-        console.log('Generated new plan for today (production - no file save)');
-      }
+    // Check if we have all required environment variables
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured');
+      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+    }
+    
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY not configured');
+      return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
+    }
+    
+    // Always generate a fresh daily plan with a new quote
+    // This ensures users get fresh content every day
+    console.log('📝 Generating fresh daily plan with OpenAI...');
+    const plan = await generateDailyPlan(today);
+    
+    // Only try to save in development (production can't write to filesystem)
+    if (process.env.NODE_ENV !== 'production') {
+      await savePlan(plan);
+      console.log('💾 Generated and saved new plan for today');
     } else {
-      console.log('Using existing plan for today');
+      console.log('✅ Generated new plan for today (production - no file save)');
     }
 
     // Generate PDF
-    console.log('Generating PDF...');
+    console.log('📄 Generating PDF...');
     const pdfBuffer = await generatePDF(plan);
+    console.log('✅ PDF generated successfully');
 
     // Send emails with PDF attachment
-    console.log('Sending emails...');
+    console.log(`📧 Sending emails to ${userEmails.length} recipients...`);
     const emailResults = await sendDailyEmail(plan, pdfBuffer);
 
     const successCount = emailResults.filter(result => result.status === 'fulfilled').length;
     const failureCount = emailResults.filter(result => result.status === 'rejected').length;
 
-    console.log(`Email sending complete: ${successCount} successful, ${failureCount} failed`);
+    console.log(`📊 Email sending complete: ${successCount} successful, ${failureCount} failed`);
+    if (failureCount > 0) {
+      console.error('❌ Failed emails:', emailResults
+        .filter(result => result.status === 'rejected')
+        .map(result => (result as PromiseRejectedResult).reason)
+      );
+    }
+    console.log(`💬 Daily plan generated with quote: "${plan.quote.text}" by ${plan.quote.author}`);
 
     return NextResponse.json({
       success: true,
       message: 'Daily plan processing complete',
       emailsSent: successCount,
       emailsFailed: failureCount,
-      planDate: plan.date
+      planDate: plan.date,
+      quote: plan.quote,
+      workoutCount: plan.workout.length,
+      mealCount: Object.keys(plan.meals).length
     });
 
   } catch (error) {
@@ -301,8 +326,32 @@ export async function POST(request: NextRequest) {
 
 // Also allow GET for testing purposes
 export async function GET() {
+  const nextRun = new Date();
+  nextRun.setUTCHours(9, 0, 0, 0); // 9:00 AM UTC (4:00 AM EST)
+  if (nextRun <= new Date()) {
+    nextRun.setDate(nextRun.getDate() + 1); // Next day if already passed today
+  }
+
   return NextResponse.json({
-    message: 'Daily plan cron endpoint is working. Use POST to trigger the daily email.',
-    time: new Date().toISOString()
+    message: 'Daily wellness cron endpoint is active 🌟',
+    status: 'healthy',
+    time: new Date().toISOString(),
+    schedule: '0 9 * * * (Every day at 9:00 AM UTC / 4:00 AM EST)',
+    nextScheduledRun: nextRun.toISOString(),
+    features: [
+      '📝 Fresh daily motivational quotes via OpenAI',
+      '💪 Daily home workout plans (7 bodyweight exercises)',
+      '🥗 Monthly meal plans (breakfast, lunch, dinner)',
+      '📧 Automated email delivery with PDF attachments',
+      '📄 Beautiful PDF reports'
+    ],
+    note: 'This endpoint generates fresh daily quotes and workouts while reusing monthly meal plans for efficiency',
+    userEmails: userEmails.length,
+    environmentCheck: {
+      openaiConfigured: !!process.env.OPENAI_API_KEY,
+      resendConfigured: !!process.env.RESEND_API_KEY,
+      cronSecretConfigured: !!process.env.CRON_SECRET,
+      nodeEnv: process.env.NODE_ENV || 'development'
+    }
   });
 }

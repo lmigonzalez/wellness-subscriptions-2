@@ -119,10 +119,10 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-emerald-400">
-                    7 Daily Exercises
+                    Daily Home Workouts
                   </h3>
                   <p className="text-gray-300 text-sm">
-                    Varied workouts with detailed instructions
+                    7 fresh bodyweight exercises daily • No equipment needed
                   </p>
                 </div>
               </div>
@@ -252,10 +252,10 @@ export default function Dashboard() {
           <section className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">💪</span>
-              This Month&apos;s Workout Plan
+              Today&apos;s Workout Plan
             </h2>
             <p className="text-gray-300 text-sm mb-4 italic">
-              🗓️ This workout plan stays consistent throughout {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+              🏠 Fresh daily home workout • 7 bodyweight exercises • No equipment needed
             </p>
             <div className="space-y-4">
               {plan.workout.map((exercise, index) => (
@@ -397,7 +397,7 @@ export default function Dashboard() {
           <div className="text-center text-gray-400">
             <p>
               Your daily wellness journey starts here. Updated every day at 4:00
-              AM ET.
+              AM EST (9:00 AM UTC) with fresh workouts and quotes.
             </p>
           </div>
         </div>
