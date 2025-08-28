@@ -40,7 +40,7 @@ async function generatePDF(plan: DailyPlan) {
             }
           </style>
         </head>
-        <body class="bg-gray-900 text-white p-8">
+        <body class="bg-black text-white p-8">
           <div class="max-w-4xl mx-auto">
             <!-- Header -->
             <header class="text-center mb-8">
@@ -69,7 +69,7 @@ async function generatePDF(plan: DailyPlan) {
               <p class="text-gray-300 text-sm mb-4 italic">🏠 Fresh daily bodyweight exercises • No equipment needed</p>
               <div class="grid gap-4">
                 ${plan.workout.map((exercise) => `
-                  <div class="bg-gray-800 rounded-lg p-4">
+                  <div class="bg-gray-950 rounded-lg p-4">
                     <h3 class="font-semibold text-lg text-white mb-2">${exercise.name}</h3>
                     <p class="text-gray-300 mb-2">${exercise.description}</p>
                     <div class="flex flex-wrap gap-2 text-sm">
@@ -92,7 +92,7 @@ async function generatePDF(plan: DailyPlan) {
               </h2>
               
               <!-- Breakfast -->
-              <div class="bg-gray-800 rounded-lg p-4 mb-6">
+              <div class="bg-gray-950 rounded-lg p-4 mb-6">
                 <h3 class="font-semibold text-lg text-orange-400 mb-2">🌅 Breakfast - ${plan.meals.breakfast.name}</h3>
                 <p class="text-gray-300 mb-2">${plan.meals.breakfast.description}</p>
                 <p class="text-sm text-emerald-400 mb-3">${plan.meals.breakfast.calories} calories</p>
@@ -113,7 +113,7 @@ async function generatePDF(plan: DailyPlan) {
               </div>
 
               <!-- Lunch -->
-              <div class="bg-gray-800 rounded-lg p-4 mb-6">
+              <div class="bg-gray-950 rounded-lg p-4 mb-6">
                 <h3 class="font-semibold text-lg text-yellow-400 mb-2">☀️ Lunch - ${plan.meals.lunch.name}</h3>
                 <p class="text-gray-300 mb-2">${plan.meals.lunch.description}</p>
                 <p class="text-sm text-emerald-400 mb-3">${plan.meals.lunch.calories} calories</p>
@@ -134,7 +134,7 @@ async function generatePDF(plan: DailyPlan) {
               </div>
 
               <!-- Dinner -->
-              <div class="bg-gray-800 rounded-lg p-4">
+              <div class="bg-gray-950 rounded-lg p-4">
                 <h3 class="font-semibold text-lg text-purple-400 mb-2">🌙 Dinner - ${plan.meals.dinner.name}</h3>
                 <p class="text-gray-300 mb-2">${plan.meals.dinner.description}</p>
                 <p class="text-sm text-emerald-400 mb-3">${plan.meals.dinner.calories} calories</p>

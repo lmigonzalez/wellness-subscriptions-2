@@ -43,7 +43,7 @@ export default function Dashboard() {
   // Premium access check
   if (!isPremium) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <div className="mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full mb-6">
@@ -70,7 +70,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-8 mb-8">
+          <div className="bg-gray-950 rounded-lg p-8 mb-8">
             <h2 className="text-2xl font-semibold text-white mb-6">
               🌟 What You&apos;ll Get with Premium Access
             </h2>
@@ -198,7 +198,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-xl">Loading your wellness plan...</div>
       </div>
     );
@@ -206,7 +206,7 @@ export default function Dashboard() {
 
   if (error || !plan) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-red-400 text-xl">
           Error: {error || "No plan available"}
         </div>
@@ -222,9 +222,9 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
+      <header className="bg-black border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-emerald-400">
@@ -238,8 +238,8 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quote of the Day */}
         <section className="mb-12">
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg p-8 text-center">
-            <h2 className="text-2xl font-semibold mb-4">Quote of the Day</h2>
+          <div className="bg-gray-950 rounded-lg p-8 text-center">
+            <h2 className="text-2xl font-semibold mb-4">Today&apos;s Quote</h2>
             <blockquote className="text-xl italic mb-4">
               &quot;{plan.quote.text}&quot;
             </blockquote>
@@ -249,7 +249,7 @@ export default function Dashboard() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Workout Plan */}
-          <section className="bg-gray-800 rounded-lg p-6">
+          <section className="bg-gray-950 rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">💪</span>
               Today&apos;s Workout Plan
@@ -259,7 +259,7 @@ export default function Dashboard() {
             </p>
             <div className="space-y-4">
               {plan.workout.map((exercise, index) => (
-                <div key={index} className="bg-gray-700 rounded-lg p-4">
+                <div key={index} className="bg-gray-800 rounded-lg p-4">
                   <h3 className="font-semibold text-lg text-white mb-2">
                     {exercise.name}
                   </h3>
@@ -285,7 +285,7 @@ export default function Dashboard() {
           </section>
 
           {/* Meal Plan */}
-          <section className="bg-gray-800 rounded-lg p-6">
+          <section className="bg-gray-950 rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">🥗</span>
               Today&apos;s Meal Plan
@@ -295,7 +295,7 @@ export default function Dashboard() {
             </p>
             <div className="space-y-6">
               {/* Breakfast */}
-              <div className="bg-gray-700 rounded-lg p-4">
+              <div className="bg-gray-800 rounded-lg p-4">
                 <h3 className="font-semibold text-lg text-orange-400 mb-2">
                   🌅 Breakfast - {plan.meals.breakfast.name}
                 </h3>
@@ -326,7 +326,7 @@ export default function Dashboard() {
               </div>
 
               {/* Lunch */}
-              <div className="bg-gray-700 rounded-lg p-4">
+              <div className="bg-gray-800 rounded-lg p-4">
                 <h3 className="font-semibold text-lg text-yellow-400 mb-2">
                   ☀️ Lunch - {plan.meals.lunch.name}
                 </h3>
@@ -357,7 +357,7 @@ export default function Dashboard() {
               </div>
 
               {/* Dinner */}
-              <div className="bg-gray-700 rounded-lg p-4">
+              <div className="bg-gray-800 rounded-lg p-4">
                 <h3 className="font-semibold text-lg text-purple-400 mb-2">
                   🌙 Dinner - {plan.meals.dinner.name}
                 </h3>
@@ -392,7 +392,7 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 mt-12">
+      <footer className="bg-black border-t border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-gray-400">
             <p>
