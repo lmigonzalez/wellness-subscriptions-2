@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "generate-monthly-plans": "node scripts/generate-monthly-plans.js",
+
     "test-wellness": "node scripts/test-wellness-system.js"
   },
   "dependencies": {

@@ -341,11 +341,11 @@ export async function GET() {
     features: [
       '📝 Fresh daily motivational quotes via OpenAI',
       '💪 Daily home workout plans (7 bodyweight exercises)',
-      '🥗 Monthly meal plans (breakfast, lunch, dinner)',
+              '🥗 Daily meal plans (breakfast, lunch, dinner)',
       '📧 Automated email delivery with PDF attachments',
       '📄 Beautiful PDF reports'
     ],
-    note: 'This endpoint generates fresh daily quotes and workouts while reusing monthly meal plans for efficiency',
+            note: 'This endpoint generates fresh daily quotes, workouts, and meals for complete daily wellness plans',
     userEmails: userEmails.length,
     environmentCheck: {
       openaiConfigured: !!process.env.OPENAI_API_KEY,

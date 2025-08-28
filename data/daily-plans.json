@@ -317,5 +317,110 @@
         ]
       }
     }
+  },
+  {
+    "date": "2025-08-28",
+    "quote": {
+      "text": "Transform your troubles into trophies, shift your pains into power. Wellness is a revolution from within.",
+      "author": "Unknown"
+    },
+    "workout": [
+      {
+        "name": "Planks",
+        "description": "Get into a push-up position, but rest your body weight on your forearms instead of your hands. Keep your body in a straight line from your head to your feet. Hold this position for the duration mentioned.",
+        "duration": "30-60 seconds",
+        "sets": "3",
+        "reps": "1"
+      },
+      {
+        "name": "Sit-ups",
+        "description": "Lie on your back, bend your legs and plant your feet on the ground. Place your hands on the back of your head. Use your abdominal muscles to pull yourself up to your knees, then lower yourself back down.",
+        "duration": "",
+        "sets": "3",
+        "reps": "10-15"
+      },
+      {
+        "name": "Push-ups",
+        "description": "Get into a high plank position, place your hands firmly on the ground, directly under shoulders. Lower your body until your chest nearly touches the floor. Push your body up back to the starting position.",
+        "duration": "",
+        "sets": "3",
+        "reps": "10-15"
+      },
+      {
+        "name": "Squats",
+        "description": "Stand with your feet shoulder-width apart. Bend at your knees and hips, sticking your butt out like you're sitting into an imaginary chair. Keep your chest upright and your hips back. Return to standing position.",
+        "duration": "",
+        "sets": "3",
+        "reps": "10-15"
+      },
+      {
+        "name": "Lunges",
+        "description": "Stand straight. Step forward with one foot until your leg reaches a 90-degree angle. Your rear knee should remain parallel to the ground and your front knee shouldn’t go beyond your toes. Step back and repeat with the other leg.",
+        "duration": "",
+        "sets": "3",
+        "reps": "10-15"
+      },
+      {
+        "name": "Jumping Jacks",
+        "description": "Stand upright with your legs together, arms at your sides. Bend your knees slightly, and jump into the air. As you jump, spread your legs to be about shoulder-width apart and stretch your arms out and over your head. Jump back to starting position.",
+        "duration": "1 minute",
+        "sets": "3",
+        "reps": ""
+      },
+      {
+        "name": "Mountain Climbers",
+        "description": "Start in a high plank position. Bring your right knee under your torso, keeping the toes off the ground. Return your right foot to the starting position. Switch legs, bringing the left knee under your chest. Keep your hips down, this isn’t a butt kick.",
+        "duration": "",
+        "sets": "3",
+        "reps": "10-15"
+      }
+    ],
+    "meals": {
+      "breakfast": {
+        "name": "Seasonal Fruit Smoothie",
+        "description": "A refreshing smoothie made with seasonal fruits, Greek yogurt, and a dash of honey",
+        "calories": 300,
+        "ingredients": [
+          "Seasonal fruits",
+          "Greek yogurt",
+          "Honey"
+        ],
+        "instructions": [
+          "Blend all ingredients until smooth",
+          "Serve chilled"
+        ]
+      },
+      "lunch": {
+        "name": "Quinoa Salad",
+        "description": "A protein-packed salad with quinoa, mixed greens, cherry tomatoes, cucumbers, and avocado",
+        "calories": 450,
+        "ingredients": [
+          "Quinoa",
+          "Mixed greens",
+          "Cherry tomatoes",
+          "Cucumbers",
+          "Avocado"
+        ],
+        "instructions": [
+          "Cook quinoa as per instructions",
+          "Mix all ingredients",
+          "Serve with a light vinaigrette"
+        ]
+      },
+      "dinner": {
+        "name": "Grilled Salmon with Steamed Veggies",
+        "description": "Grilled salmon served with a side of steamed seasonal vegetables",
+        "calories": 600,
+        "ingredients": [
+          "Salmon",
+          "Seasonal vegetables"
+        ],
+        "instructions": [
+          "Grill salmon until cooked",
+          "Steam vegetables",
+          "Serve hot"
+        ]
+      }
+    }
   }
 ]

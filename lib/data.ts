@@ -28,7 +28,7 @@ export interface DailyPlan {
   };
 }
 
-// Sample data for the current month
+// Sample data for daily plans
 export const samplePlans: DailyPlan[] = [
   {
     date: new Date().toISOString().split('T')[0], // Today's date

@@ -288,10 +288,10 @@ export default function Dashboard() {
           <section className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
               <span className="mr-3">🥗</span>
-              This Month&apos;s Meal Plan
+              Today&apos;s Meal Plan
             </h2>
             <p className="text-gray-300 text-sm mb-4 italic">
-              🍽️ These recipes are designed for the month of {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+              🍽️ Fresh daily recipes designed for today
             </p>
             <div className="space-y-6">
               {/* Breakfast */}

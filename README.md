@@ -6,18 +6,19 @@ A Next.js application that generates personalized daily wellness plans with work
 
 - **Daily Wellness Plans**: Personalized daily workout routines and meal plans
 - **Inspirational Quotes**: Fresh daily quotes generated using OpenAI
-- **Monthly Plans**: Comprehensive monthly workout and nutrition programs
+- **Daily Plans**: Comprehensive daily workout routines and meal plans
 - **PDF Generation**: Beautiful PDF exports of daily plans
 - **Email Delivery**: Automated email delivery with PDF attachments
 - **Cron Jobs**: Automated daily plan generation and delivery
 
-## Daily Quotes & Monthly Plans
+## Daily Wellness Plans
 
 ### How It Works
 
 1. **Daily Quotes**: Each day, a fresh inspirational quote is generated using OpenAI's GPT-4 model
-2. **Monthly Plans**: Comprehensive workout and meal plans are generated monthly and reused throughout the month
-3. **Daily Plans**: Combines the daily quote with the monthly workout/meal plan for a complete daily experience
+2. **Daily Workouts**: Fresh daily workout routines with 7 varied exercises (cardio, strength, flexibility, core)
+3. **Daily Meals**: Fresh daily meal plans with 3 nutritious meals (breakfast, lunch, dinner) using seasonal ingredients
+4. **Complete Daily Experience**: Each day provides a unique combination of quote, workout, and meals
 
 ### Quote Generation
 
@@ -26,12 +27,13 @@ A Next.js application that generates personalized daily wellness plans with work
 - Quotes are wellness, health, and fitness focused
 - Each quote is unique and inspiring for the specific day
 
-### Monthly Plan Generation
+### Daily Plan Generation
 
-- Plans include 7 varied exercises (cardio, strength, flexibility, core)
+- Each day generates fresh content for a unique experience
+- Workouts include 7 varied exercises (cardio, strength, flexibility, core)
 - 3 nutritious meals (breakfast, lunch, dinner) with seasonal ingredients
 - Plans consider seasonal availability and weather
-- Suitable for daily repetition throughout the month
+- Content is optimized for daily variety and engagement
 
 ## Setup
 
@@ -55,32 +57,25 @@ npm run dev
 
 ## Usage
 
-### Generate Monthly Plans
+### Generate Daily Plans
 
-Generate fresh monthly plans for current and upcoming months:
+Generate fresh daily plans for specific dates:
 
 ```bash
-npm run generate-monthly-plans
+curl -X POST http://localhost:3000/api/admin/generate-plan \
+  -H "Content-Type: application/json" \
+  -d '{"date": "2025-01-15"}'
 ```
 
 ### Test System
 
-Test that daily quotes and monthly plans are working properly:
+Test that daily wellness plans are working properly:
 
 ```bash
 npm run test-wellness
 ```
 
-### Manual Monthly Plan Generation
 
-Generate a plan for a specific month via API:
-
-```bash
-curl -X POST http://localhost:3000/api/admin/generate-monthly-plan \
-  -H "Authorization: Bearer your_admin_secret" \
-  -H "Content-Type: application/json" \
-  -d '{"monthKey": "2025-01"}'
-```
 
 ### Cron Job
 
@@ -94,7 +89,7 @@ The system includes a cron job that runs daily at 9 AM to:
 
 - `GET /api/daily-plan` - Get today's plan or plan for specific date
 - `POST /api/cron/daily-plan` - Trigger daily plan generation (cron job)
-- `POST /api/admin/generate-monthly-plan` - Generate monthly plan for specific month
+- `POST /api/admin/generate-plan` - Generate daily plan for specific date
 
 ## Data Storage
 
@@ -110,11 +105,11 @@ The system includes a cron job that runs daily at 9 AM to:
 3. Check the console logs for error messages
 4. Run `npm run test-wellness` to diagnose issues
 
-### Monthly Plans Not Updating
+### Daily Plans Not Updating
 
-1. Run `npm run generate-monthly-plans` to create fresh plans
-2. Check that the monthly storage is working properly
-3. Verify OpenAI API is responding correctly
+1. Check that the daily plan generation is working properly
+2. Verify OpenAI API is responding correctly
+3. Check the console logs for error messages
 
 ### Cron Job Issues
 
@@ -130,16 +125,15 @@ The system includes a cron job that runs daily at 9 AM to:
 ```
 lib/
   ├── openai.ts          # OpenAI integration for quotes and plans
-  ├── monthly-storage.ts # Monthly plan storage utilities
+  ├── storage.ts         # Daily plan storage utilities
   └── data.ts           # Data types and sample data
 
 scripts/
-  ├── generate-monthly-plans.js  # Generate monthly plans utility
   └── test-wellness-system.js    # System testing utility
 
 app/api/
   ├── cron/daily-plan/           # Daily cron job endpoint
-  ├── admin/generate-monthly-plan/ # Admin monthly plan generation
+  ├── admin/generate-plan/       # Admin daily plan generation
   └── daily-plan/                # Daily plan retrieval
 ```
 
@@ -148,7 +142,7 @@ app/api/
 1. **New Quote Categories**: Modify the OpenAI prompt in `generateDailyQuote()`
 2. **Additional Exercise Types**: Update the `Exercise` interface in `data.ts`
 3. **New Meal Categories**: Extend the `Meal` interface and update generation prompts
-4. **Custom Workout Plans**: Modify the monthly plan generation in `generateMonthlyPlan()`
+4. **Custom Workout Plans**: Modify the daily plan generation in `generateDailyPlan()`
 
 ## Production Deployment
 

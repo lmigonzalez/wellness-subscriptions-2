@@ -72,7 +72,7 @@ export async function generateDailyQuote(date: string): Promise<{ text: string; 
   }
 }
 
-// Generate daily workout and monthly meal plans
+// Generate daily workout and meal plans
 export async function generateDailyWorkout(date: string): Promise<Exercise[]> {
   const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
   const dayOfMonth = new Date(date).getDate();
@@ -151,8 +151,9 @@ export async function generateDailyWorkout(date: string): Promise<Exercise[]> {
   }
 }
 
-// Generate monthly meal plans (keeping meals monthly for consistency)
-export async function generateMonthlyMeals(date: string): Promise<{ breakfast: Meal; lunch: Meal; dinner: Meal }> {
+// Generate daily meal plans
+export async function generateDailyMeals(date: string): Promise<{ breakfast: Meal; lunch: Meal; dinner: Meal }> {
+  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
   const month = new Date(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const season = getSeason(date);
   
@@ -162,7 +163,7 @@ export async function generateMonthlyMeals(date: string): Promise<{ breakfast: M
       messages: [
         {
           role: "system",
-          content: `You are a nutrition expert creating monthly meal plans. Generate 3 nutritious meals for the month.
+          content: `You are a nutrition expert creating daily meal plans. Generate 3 nutritious meals for the specific day.
           
           Return ONLY valid JSON in this exact format:
           {
@@ -179,7 +180,7 @@ export async function generateMonthlyMeals(date: string): Promise<{ breakfast: M
         },
         {
           role: "user",
-          content: `Create nutritious meals for ${month} (${season} season). 
+          content: `Create nutritious meals for ${dayOfWeek}, ${month} (${season} season). 
           
           Generate:
           - 3 nutritious meals (breakfast, lunch, dinner) with seasonal ingredients for ${season}
@@ -187,6 +188,7 @@ export async function generateMonthlyMeals(date: string): Promise<{ breakfast: M
           - Focus on whole foods and balanced nutrition
           - Consider seasonal availability for ${season}
           - Appropriate for general dietary needs
+          - Make each day unique and varied
           
           Return only the JSON, no other text.`
         }
@@ -212,8 +214,8 @@ export async function generateMonthlyMeals(date: string): Promise<{ breakfast: M
       throw new Error('Invalid response format from OpenAI');
     }
   } catch (error) {
-    console.error('Error generating monthly meals with OpenAI:', error);
-    return getFallbackMonthlyMeals();
+    console.error('Error generating daily meals with OpenAI:', error);
+    return getFallbackDailyMeals();
   }
 }
 
@@ -226,9 +228,8 @@ function getSeason(date: string): string {
   return 'winter';
 }
 
-// Main function to generate daily plan (combines daily quote and workout with monthly meals)
+// Main function to generate daily plan (combines daily quote, workout, and meals)
 export async function generateDailyPlan(date: string): Promise<DailyPlan> {
-  const monthKey = new Date(date).toISOString().slice(0, 7); // YYYY-MM format
   
   try {
     // Get daily quote
@@ -241,14 +242,14 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
     const workout = await generateDailyWorkout(date);
     console.log(`Generated daily workout with ${workout.length} exercises`);
     
-    // Get or generate monthly meals
-    const monthlyMeals = await getOrGenerateMonthlyMeals(monthKey);
+    // Get or generate daily meals
+    const dailyMeals = await getOrGenerateDailyMeals(date);
     
     return {
       date,
       quote,
       workout,
-      meals: monthlyMeals
+      meals: dailyMeals
     };
   } catch (error) {
     console.error('Error generating daily plan:', error);
@@ -256,35 +257,40 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
   }
 }
 
-// Helper function to get or generate monthly meals
-async function getOrGenerateMonthlyMeals(monthKey: string) {
+// Helper function to get or generate daily meals
+async function getOrGenerateDailyMeals(date: string) {
   // In production (Vercel), we can't write to filesystem
-  // So we'll always generate fresh monthly content
+  // So we'll always generate fresh daily content
   if (process.env.NODE_ENV === 'production') {
-    console.log(`Generating fresh monthly meals for ${monthKey} in production...`);
-    return await generateMonthlyMeals(monthKey + '-01');
+    console.log(`Generating fresh daily meals for ${date} in production...`);
+    return await generateDailyMeals(date);
   }
   
-  // In development, try to load existing monthly meals from storage
+  // In development, try to load existing daily meals from storage
   try {
-    const { loadMonthlyPlan, saveMonthlyPlan } = await import('./monthly-storage');
-    const monthlyPlan = await loadMonthlyPlan(monthKey);
+    const { getPlanByDate, savePlan } = await import('./storage');
+    const existingPlan = await getPlanByDate(date);
     
-    if (!monthlyPlan || !monthlyPlan.meals) {
-      // Generate new monthly meals
-      console.log(`Generating new monthly meals for ${monthKey}...`);
-      const monthlyMeals = await generateMonthlyMeals(monthKey + '-01'); // Use first day of month
-      const planToSave = { meals: monthlyMeals, workout: [] }; // Save meals in the existing structure
-      await saveMonthlyPlan(monthKey, planToSave);
-      console.log(`Generated and saved monthly meals for ${monthKey}`);
-      return monthlyMeals;
+    if (!existingPlan || !existingPlan.meals) {
+      // Generate new daily meals
+      console.log(`Generating new daily meals for ${date}...`);
+      const dailyMeals = await generateDailyMeals(date);
+      const planToSave = { 
+        date,
+        quote: { text: "Fallback quote", author: "Unknown" },
+        workout: [],
+        meals: dailyMeals
+      };
+      await savePlan(planToSave);
+      console.log(`Generated and saved daily meals for ${date}`);
+      return dailyMeals;
     } else {
-      console.log(`Loaded existing monthly meals for ${monthKey}`);
-      return monthlyPlan.meals;
+      console.log(`Loaded existing daily meals for ${date}`);
+      return existingPlan.meals;
     }
   } catch (error) {
-    console.error('Error with monthly meals storage:', error);
-    return getFallbackMonthlyMeals();
+    console.error('Error with daily meals storage:', error);
+    return getFallbackDailyMeals();
   }
 }
 
@@ -366,8 +372,8 @@ function getFallbackDailyWorkout(): Exercise[] {
   ];
 }
 
-// Fallback monthly meals if OpenAI is unavailable
-function getFallbackMonthlyMeals(): { breakfast: Meal; lunch: Meal; dinner: Meal } {
+// Fallback daily meals if OpenAI is unavailable
+function getFallbackDailyMeals(): { breakfast: Meal; lunch: Meal; dinner: Meal } {
   return {
     breakfast: {
       name: "Protein Power Bowl",
@@ -441,12 +447,12 @@ function getFallbackMonthlyMeals(): { breakfast: Meal; lunch: Meal; dinner: Meal
 function getFallbackPlan(date: string): DailyPlan {
   const quote = getFallbackQuote(date);
   const dailyWorkout = getFallbackDailyWorkout();
-  const monthlyMeals = getFallbackMonthlyMeals();
+      const dailyMeals = getFallbackDailyMeals();
 
-  return {
-    date,
-    quote,
-    workout: dailyWorkout,
-    meals: monthlyMeals
-  };
+      return {
+      date,
+      quote,
+      workout: dailyWorkout,
+      meals: dailyMeals
+    };
 }

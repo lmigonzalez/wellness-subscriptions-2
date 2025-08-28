@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Test script to verify daily quotes and monthly plans are working
+ * Test script to verify daily wellness plans are working
  * Run with: node scripts/test-wellness-system.js
  */
 
@@ -18,30 +18,10 @@ process.env.NODE_ENV = 'development';
 
 async function testWellnessSystem() {
   try {
-    console.log('🧪 Testing Wellness System...\n');
+    console.log('🧪 Testing Daily Wellness System...\n');
     
-    // Test 1: Check if monthly plans exist
-    console.log('📋 Test 1: Checking monthly plans...');
-    try {
-      const monthlyPlansPath = path.join(__dirname, '..', 'data', 'monthly-plans.json');
-      const monthlyPlansData = await fs.readFile(monthlyPlansPath, 'utf-8');
-      const monthlyPlans = JSON.parse(monthlyPlansData);
-      
-      if (Object.keys(monthlyPlans).length === 0) {
-        console.log('   ❌ No monthly plans found');
-      } else {
-        console.log(`   ✅ Found ${Object.keys(monthlyPlans).length} monthly plans:`);
-        Object.keys(monthlyPlans).forEach(month => {
-          const plan = monthlyPlans[month];
-          console.log(`      ${month}: ${plan.workout.length} exercises, 3 meals`);
-        });
-      }
-    } catch (error) {
-      console.log('   ❌ Error reading monthly plans:', error.message);
-    }
-    
-    // Test 2: Check if daily plans exist
-    console.log('\n📅 Test 2: Checking daily plans...');
+    // Test 1: Check if daily plans exist
+    console.log('📅 Test 1: Checking daily plans...');
     try {
       const dailyPlansPath = path.join(__dirname, '..', 'data', 'daily-plans.json');
       const dailyPlansData = await fs.readFile(dailyPlansPath, 'utf-8');
@@ -75,8 +55,8 @@ async function testWellnessSystem() {
       console.log('   ❌ Error reading daily plans:', error.message);
     }
     
-    // Test 3: Test quote generation (simulated)
-    console.log('\n💬 Test 3: Testing quote generation...');
+    // Test 2: Test quote generation (simulated)
+    console.log('\n💬 Test 2: Testing quote generation...');
     try {
       // Since we can't easily import the OpenAI module in this script,
       // we'll test the data structure instead
@@ -105,56 +85,8 @@ async function testWellnessSystem() {
       console.log('   ❌ Error testing quote generation:', error.message);
     }
     
-    // Test 4: Test monthly plan structure
-    console.log('\n📊 Test 4: Testing monthly plan structure...');
-    try {
-      const monthlyPlansPath = path.join(__dirname, '..', 'data', 'monthly-plans.json');
-      const monthlyPlansData = await fs.readFile(monthlyPlansPath, 'utf-8');
-      const monthlyPlans = JSON.parse(monthlyPlansData);
-      
-      if (Object.keys(monthlyPlans).length > 0) {
-        console.log('   ✅ Monthly plans structure validation:');
-        
-        for (const [monthKey, plan] of Object.entries(monthlyPlans)) {
-          console.log(`      ${monthKey}:`);
-          
-          // Validate workout structure
-          if (plan.workout && Array.isArray(plan.workout)) {
-            console.log(`        💪 Workout: ${plan.workout.length} exercises`);
-            plan.workout.forEach((exercise, index) => {
-              if (exercise.name && exercise.description && exercise.duration) {
-                console.log(`          ${index + 1}. ${exercise.name} - ${exercise.duration}`);
-              } else {
-                console.log(`          ${index + 1}. ❌ Invalid exercise structure`);
-              }
-            });
-          } else {
-            console.log(`        ❌ Invalid workout structure`);
-          }
-          
-          // Validate meals structure
-          if (plan.meals && plan.meals.breakfast && plan.meals.lunch && plan.meals.dinner) {
-            console.log(`        🥗 Meals: 3 meals (breakfast, lunch, dinner)`);
-            Object.entries(plan.meals).forEach(([mealType, meal]) => {
-              if (meal.name && meal.calories && meal.ingredients && meal.instructions) {
-                console.log(`          ${mealType}: ${meal.name} (${meal.calories} cal)`);
-              } else {
-                console.log(`          ${mealType}: ❌ Invalid meal structure`);
-              }
-            });
-          } else {
-            console.log(`        ❌ Invalid meals structure`);
-          }
-        }
-      } else {
-        console.log('   ❌ No monthly plans to validate');
-      }
-    } catch (error) {
-      console.log('   ❌ Error testing monthly plan structure:', error.message);
-    }
-    
-    // Test 5: Test daily plan structure
-    console.log('\n🎯 Test 5: Testing daily plan structure...');
+    // Test 3: Test daily plan structure
+    console.log('\n🎯 Test 3: Testing daily plan structure...');
     try {
       const dailyPlansPath = path.join(__dirname, '..', 'data', 'daily-plans.json');
       const dailyPlansData = await fs.readFile(dailyPlansPath, 'utf-8');
@@ -195,18 +127,12 @@ async function testWellnessSystem() {
     // Summary
     console.log('\n📊 Summary:');
     try {
-      const monthlyPlansPath = path.join(__dirname, '..', 'data', 'monthly-plans.json');
-      const monthlyPlansData = await fs.readFile(monthlyPlansPath, 'utf-8');
-      const monthlyPlans = JSON.parse(monthlyPlansData);
-      
       const dailyPlansPath = path.join(__dirname, '..', 'data', 'daily-plans.json');
       const dailyPlansData = await fs.readFile(dailyPlansPath, 'utf-8');
       const dailyPlans = JSON.parse(dailyPlansData);
       
-      console.log(`   Monthly plans: ${Object.keys(monthlyPlans).length}`);
       console.log(`   Daily plans: ${dailyPlans.length}`);
       console.log('   Quote generation: ✅ Working');
-      console.log('   Monthly plan structure: ✅ Valid');
       console.log('   Daily plan structure: ✅ Valid');
     } catch (error) {
       console.log('   ❌ Could not generate summary due to errors');
@@ -218,5 +144,5 @@ async function testWellnessSystem() {
   }
 }
 
-// Run the test
-testWellnessSystem();
+// Run the tests
+testWellnessSystem(); 
