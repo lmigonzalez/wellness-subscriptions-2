@@ -60,10 +60,10 @@ export default function Dashboard() {
                 />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-emerald-400 mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               Premium Access Required
             </h1>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-white mb-8">
               The Daily Wellness Dashboard is exclusively available to premium
               members.
             </p>
@@ -91,10 +91,10 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-400">
+                  <h3 className="font-semibold text-white">
                     Daily AI-Generated Content
                   </h3>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-white text-sm">
                     Fresh quotes, workouts, and meal plans every day
                   </p>
                 </div>
@@ -117,10 +117,10 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-400">
+                  <h3 className="font-semibold text-white">
                     Daily Home Workouts
                   </h3>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-white text-sm">
                     7 fresh bodyweight exercises daily • No equipment needed
                   </p>
                 </div>
@@ -143,10 +143,10 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-400">
+                  <h3 className="font-semibold text-white">
                     Complete Meal Plans
                   </h3>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-white text-sm">
                     Breakfast, lunch, and dinner with recipes
                   </p>
                 </div>
@@ -169,10 +169,10 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-400">
+                  <h3 className="font-semibold text-white">
                     Daily Email & PDF
                   </h3>
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-white text-sm">
                     Get your plan delivered every morning
                   </p>
                 </div>
@@ -180,7 +180,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="text-gray-400">
+          <div className="text-white">
             <p className="mb-4">
               💡 To access the Daily Wellness Dashboard, you need to be a
               premium member.
@@ -226,10 +226,10 @@ export default function Dashboard() {
       <header className="bg-black border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-emerald-400">
+            <h1 className="text-3xl font-bold text-white">
               Your Daily Wellness Dashboard
             </h1>
-            <p className="text-gray-300 mt-2">{today}</p>
+            <p className="text-white mt-2">{today}</p>
           </div>
         </div>
       </header>
@@ -249,11 +249,11 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Workout Plan */}
           <section className="bg-black rounded-lg p-6 border border-gray-700">
-            <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
               <span className="mr-3">💪</span>
               Today&apos;s Workout Plan
             </h2>
-            <p className="text-gray-300 text-sm mb-4 italic">
+            <p className="text-white text-sm mb-4 italic">
               🏠 Fresh daily home workout • 7 bodyweight exercises • No
               equipment needed
             </p>
@@ -263,7 +263,7 @@ export default function Dashboard() {
                   <h3 className="font-semibold text-lg text-white mb-2">
                     {exercise.name}
                   </h3>
-                  <p className="text-gray-300 mb-2">{exercise.description}</p>
+                  <p className="text-white mb-2">{exercise.description}</p>
                   <div className="flex flex-wrap gap-2 text-sm">
                     <span className="bg-emerald-600 px-2 py-1 rounded text-white">
                       {exercise.duration}
@@ -286,20 +286,20 @@ export default function Dashboard() {
 
           {/* Meal Plan */}
           <section className="bg-black rounded-lg p-6 border border-gray-700">
-            <h2 className="text-2xl font-semibold mb-4 text-emerald-400 flex items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-white flex items-center">
               <span className="mr-3">🥗</span>
               Today&apos;s Meal Plan
             </h2>
-            <p className="text-gray-300 text-sm mb-4 italic">
+            <p className="text-white text-sm mb-4 italic">
               🍽️ Fresh daily recipes designed for today
             </p>
             <div className="space-y-6">
               {/* Breakfast */}
               <div className="bg-black rounded-lg p-4">
-                <h3 className="font-semibold text-lg text-orange-400 mb-2">
+                <h3 className="font-semibold text-lg text-white mb-2">
                   🌅 Breakfast - {plan.meals.breakfast.name}
                 </h3>
-                <p className="text-gray-300 mb-2">
+                <p className="text-white mb-2">
                   {plan.meals.breakfast.description}
                 </p>
                 <p className="text-sm text-emerald-400 mb-3">
@@ -308,7 +308,7 @@ export default function Dashboard() {
 
                 <div className="mb-3">
                   <h4 className="font-medium text-white mb-1">Ingredients:</h4>
-                  <ul className="text-sm text-gray-300 list-disc list-inside">
+                  <ul className="text-sm text-white list-disc list-inside">
                     {plan.meals.breakfast.ingredients.map((ingredient, i) => (
                       <li key={i}>{ingredient}</li>
                     ))}
@@ -317,7 +317,7 @@ export default function Dashboard() {
 
                 <div>
                   <h4 className="font-medium text-white mb-1">Instructions:</h4>
-                  <ol className="text-sm text-gray-300 list-decimal list-inside space-y-1">
+                  <ol className="text-sm text-white list-decimal list-inside space-y-1">
                     {plan.meals.breakfast.instructions.map((instruction, i) => (
                       <li key={i}>{instruction}</li>
                     ))}
@@ -327,10 +327,10 @@ export default function Dashboard() {
 
               {/* Lunch */}
               <div className="bg-black rounded-lg p-4">
-                <h3 className="font-semibold text-lg text-yellow-400 mb-2">
+                <h3 className="font-semibold text-lg text-white mb-2">
                   ☀️ Lunch - {plan.meals.lunch.name}
                 </h3>
-                <p className="text-gray-300 mb-2">
+                <p className="text-white mb-2">
                   {plan.meals.lunch.description}
                 </p>
                 <p className="text-sm text-emerald-400 mb-3">
@@ -339,7 +339,7 @@ export default function Dashboard() {
 
                 <div className="mb-3">
                   <h4 className="font-medium text-white mb-1">Ingredients:</h4>
-                  <ul className="text-sm text-gray-300 list-disc list-inside">
+                  <ul className="text-sm text-white list-disc list-inside">
                     {plan.meals.lunch.ingredients.map((ingredient, i) => (
                       <li key={i}>{ingredient}</li>
                     ))}
@@ -348,7 +348,7 @@ export default function Dashboard() {
 
                 <div>
                   <h4 className="font-medium text-white mb-1">Instructions:</h4>
-                  <ol className="text-sm text-gray-300 list-decimal list-inside space-y-1">
+                  <ol className="text-sm text-white list-decimal list-inside space-y-1">
                     {plan.meals.lunch.instructions.map((instruction, i) => (
                       <li key={i}>{instruction}</li>
                     ))}
@@ -358,10 +358,10 @@ export default function Dashboard() {
 
               {/* Dinner */}
               <div className="bg-black rounded-lg p-4">
-                <h3 className="font-semibold text-lg text-purple-400 mb-2">
+                <h3 className="font-semibold text-lg text-white mb-2">
                   🌙 Dinner - {plan.meals.dinner.name}
                 </h3>
-                <p className="text-gray-300 mb-2">
+                <p className="text-white mb-2">
                   {plan.meals.dinner.description}
                 </p>
                 <p className="text-sm text-emerald-400 mb-3">
@@ -370,7 +370,7 @@ export default function Dashboard() {
 
                 <div className="mb-3">
                   <h4 className="font-medium text-white mb-1">Ingredients:</h4>
-                  <ul className="text-sm text-gray-300 list-disc list-inside">
+                  <ul className="text-sm text-white list-disc list-inside">
                     {plan.meals.dinner.ingredients.map((ingredient, i) => (
                       <li key={i}>{ingredient}</li>
                     ))}
@@ -379,7 +379,7 @@ export default function Dashboard() {
 
                 <div>
                   <h4 className="font-medium text-white mb-1">Instructions:</h4>
-                  <ol className="text-sm text-gray-300 list-decimal list-inside space-y-1">
+                  <ol className="text-sm text-white list-decimal list-inside space-y-1">
                     {plan.meals.dinner.instructions.map((instruction, i) => (
                       <li key={i}>{instruction}</li>
                     ))}
@@ -394,7 +394,7 @@ export default function Dashboard() {
       {/* Footer */}
       <footer className="bg-black border-t border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-gray-400">
+          <div className="text-center text-white">
             <p>
               Your daily wellness journey starts here. Updated every day at 4:00
               AM EST (9:00 AM UTC) with fresh workouts and quotes.
