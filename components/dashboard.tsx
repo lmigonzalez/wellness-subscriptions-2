@@ -12,7 +12,6 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Check if user is premium
     const premiumParam = searchParams.get("is_premium");
     const isUserPremium = premiumParam === "true";
     setIsPremium(isUserPremium);
