@@ -18,12 +18,105 @@ export async function GET(request: NextRequest) {
       plan = await getPlanByDate(date);
     } else {
       // For today's plan, handle production vs development differently
-      if (process.env.NODE_ENV === 'production' || forceRefresh) {
-        // In production or when force refresh is requested, always generate fresh content for today
-        console.log(`${process.env.NODE_ENV === 'production' ? 'Production' : 'Force refresh'} mode: Generating fresh daily plan for ${today}`);
-        plan = await generateDailyPlan(today);
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1' || forceRefresh;
+      
+      if (isProduction) {
+        // In production (Vercel) or when force refresh is requested, always generate fresh content for today
+        console.log(`Production/Force refresh mode: Generating fresh daily plan for ${today}`);
+        console.log(`Environment variables: NODE_ENV=${process.env.NODE_ENV}, VERCEL=${process.env.VERCEL}`);
+        
+        try {
+          plan = await generateDailyPlan(today);
+          console.log(`Successfully generated fresh plan for ${today}`);
+        } catch (error) {
+          console.error(`Error generating plan: ${error}`);
+          // In production, if OpenAI fails, return a fallback plan with today's date
+          plan = {
+            date: today,
+            quote: {
+              text: "The groundwork of all happiness is health.",
+              author: "Leigh Hunt"
+            },
+            workout: [
+              {
+                name: "Plank",
+                description: "Hold your body straight like a board, engaging your core muscles",
+                duration: "30-60 seconds",
+                sets: "3",
+                reps: "30-60 seconds"
+              },
+              {
+                name: "Push-ups", 
+                description: "Classic upper body strength exercise. Modify on knees if needed",
+                duration: "",
+                sets: "3",
+                reps: "8-15"
+              },
+              {
+                name: "Sit-ups",
+                description: "Core strengthening exercise. Keep your feet flat on the ground", 
+                duration: "",
+                sets: "3",
+                reps: "15"
+              },
+              {
+                name: "Squats",
+                description: "Lower body strength. Keep your chest up and knees behind toes",
+                duration: "",
+                sets: "3", 
+                reps: "15"
+              },
+              {
+                name: "Lunges",
+                description: "Alternate legs for balance and strength training",
+                duration: "",
+                sets: "3",
+                reps: "10 each leg"
+              },
+              {
+                name: "Jumping Jacks",
+                description: "Full body cardio exercise to get your heart rate up",
+                duration: "30 seconds",
+                sets: "3",
+                reps: "30 seconds"
+              },
+              {
+                name: "Mountain Climbers",
+                description: "High-intensity core and cardio exercise in plank position",
+                duration: "20 seconds",
+                sets: "3", 
+                reps: "20 seconds"
+              }
+            ],
+            meals: {
+              breakfast: {
+                name: "Protein Power Bowl",
+                description: "Nutritious start with protein and healthy fats",
+                calories: 450,
+                ingredients: ["2 eggs", "1/2 avocado", "1 slice whole grain toast", "1 cup spinach", "1 tbsp olive oil"],
+                instructions: ["Heat olive oil in a pan", "Sauté spinach until wilted", "Scramble eggs", "Toast bread and top with avocado", "Serve eggs over spinach"]
+              },
+              lunch: {
+                name: "Mediterranean Quinoa Salad", 
+                description: "Fresh and filling Mediterranean-inspired salad",
+                calories: 520,
+                ingredients: ["1 cup cooked quinoa", "1/2 cucumber", "1/2 cup cherry tomatoes", "1/4 cup feta cheese", "2 tbsp olive oil"],
+                instructions: ["Cook quinoa and let cool", "Dice vegetables", "Combine with feta", "Dress with olive oil and lemon"]
+              },
+              dinner: {
+                name: "Grilled Salmon with Roasted Vegetables",
+                description: "Omega-3 rich salmon with colorful roasted vegetables", 
+                calories: 580,
+                ingredients: ["6 oz salmon fillet", "1 cup broccoli", "1 bell pepper", "1/2 zucchini", "2 tbsp olive oil"],
+                instructions: ["Preheat oven to 425°F", "Roast vegetables for 20 minutes", "Grill salmon 4-5 minutes per side", "Serve together"]
+              }
+            }
+          };
+          console.log(`Using fallback plan for ${today} due to OpenAI error`);
+        }
       } else {
         // In development, try to get from storage first, then generate if needed
+        console.log(`Development mode: Checking storage for ${today}`);
         plan = await getTodaysPlan();
         
         if (!plan) {
@@ -43,12 +136,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Add metadata to response
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
     const response = {
       ...plan,
       _metadata: {
         generatedAt: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development',
-        isFreshContent: !date && process.env.NODE_ENV === 'production'
+        vercelDetected: !!process.env.VERCEL,
+        isFreshContent: !date && isProduction,
+        forceRefresh: forceRefresh
       }
     };
 
