@@ -326,53 +326,53 @@
     },
     "workout": [
       {
-        "name": "Planks",
-        "description": "Get into a push-up position, but rest your body weight on your forearms instead of your hands. Keep your body in a straight line from your head to your feet. Hold this position for the duration mentioned.",
+        "name": "Plank",
+        "description": "Hold your body straight like a board, engaging your core muscles",
         "duration": "30-60 seconds",
         "sets": "3",
-        "reps": "1"
+        "reps": "30-60 seconds"
       },
       {
         "name": "Sit-ups",
-        "description": "Lie on your back, bend your legs and plant your feet on the ground. Place your hands on the back of your head. Use your abdominal muscles to pull yourself up to your knees, then lower yourself back down.",
+        "description": "Core strengthening exercise. Keep your feet flat on the ground",
         "duration": "",
         "sets": "3",
-        "reps": "10-15"
+        "reps": "15"
       },
       {
         "name": "Push-ups",
-        "description": "Get into a high plank position, place your hands firmly on the ground, directly under shoulders. Lower your body until your chest nearly touches the floor. Push your body up back to the starting position.",
+        "description": "Classic upper body strength exercise. Modify on knees if needed",
         "duration": "",
         "sets": "3",
-        "reps": "10-15"
+        "reps": "8-15"
       },
       {
         "name": "Squats",
-        "description": "Stand with your feet shoulder-width apart. Bend at your knees and hips, sticking your butt out like you're sitting into an imaginary chair. Keep your chest upright and your hips back. Return to standing position.",
+        "description": "Lower body strength. Keep your chest up and knees behind toes",
         "duration": "",
         "sets": "3",
-        "reps": "10-15"
+        "reps": "15"
       },
       {
         "name": "Lunges",
-        "description": "Stand straight. Step forward with one foot until your leg reaches a 90-degree angle. Your rear knee should remain parallel to the ground and your front knee shouldn’t go beyond your toes. Step back and repeat with the other leg.",
+        "description": "Alternate legs for balance and strength training",
         "duration": "",
         "sets": "3",
-        "reps": "10-15"
+        "reps": "10 each leg"
       },
       {
         "name": "Jumping Jacks",
-        "description": "Stand upright with your legs together, arms at your sides. Bend your knees slightly, and jump into the air. As you jump, spread your legs to be about shoulder-width apart and stretch your arms out and over your head. Jump back to starting position.",
-        "duration": "1 minute",
+        "description": "Full body cardio exercise to get your heart rate up",
+        "duration": "30 seconds",
         "sets": "3",
-        "reps": ""
+        "reps": "30 seconds"
       },
       {
         "name": "Mountain Climbers",
-        "description": "Start in a high plank position. Bring your right knee under your torso, keeping the toes off the ground. Return your right foot to the starting position. Switch legs, bringing the left knee under your chest. Keep your hips down, this isn’t a butt kick.",
-        "duration": "",
+        "description": "High-intensity core and cardio exercise in plank position",
+        "duration": "20 seconds",
         "sets": "3",
-        "reps": "10-15"
+        "reps": "20 seconds"
       }
     ],
     "meals": {
