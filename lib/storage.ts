@@ -49,12 +49,18 @@ export async function getTodaysPlan(): Promise<DailyPlan | null> {
     return await generateDailyPlan(today);
   }
   
-  // In development, try to load from file first
+  // In development, check if today's plan exists
   let plan = await getPlanByDate(today);
+  
+  // If no plan exists for today, generate fresh content
   if (!plan) {
+    console.log(`No plan found for ${today}, generating fresh content...`);
     const { generateDailyPlan } = await import('./openai');
     plan = await generateDailyPlan(today);
     await savePlan(plan);
+    console.log(`Generated and saved new plan for ${today}`);
+  } else {
+    console.log(`Found existing plan for ${today}`);
   }
   
   return plan;
@@ -71,14 +77,36 @@ export async function savePlan(plan: DailyPlan): Promise<void> {
     plans.push(plan);
   }
 
-  // Sort plans by date
-  plans.sort((a, b) => a.date.localeCompare(b.date));
+  // Clean up old plans (keep only last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoffDate = thirtyDaysAgo.toISOString().split("T")[0];
+  
+  const recentPlans = plans.filter(p => p.date >= cutoffDate);
 
-  await savePlans(plans);
+  // Sort plans by date
+  recentPlans.sort((a, b) => a.date.localeCompare(b.date));
+
+  await savePlans(recentPlans);
 }
 
 // Check if plan exists for date
 export async function planExists(date: string): Promise<boolean> {
   const plan = await getPlanByDate(date);
   return plan !== null;
+}
+
+// Clean up old plans (keep only last 30 days)
+export async function cleanupOldPlans(): Promise<void> {
+  const plans = await loadPlans();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoffDate = thirtyDaysAgo.toISOString().split("T")[0];
+  
+  const recentPlans = plans.filter(plan => plan.date >= cutoffDate);
+  
+  if (recentPlans.length !== plans.length) {
+    console.log(`Cleaned up ${plans.length - recentPlans.length} old plans`);
+    await savePlans(recentPlans);
+  }
 }
