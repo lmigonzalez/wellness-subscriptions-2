@@ -275,13 +275,9 @@ export async function POST(request: NextRequest) {
     console.log('📝 Generating fresh daily plan with OpenAI...');
     const plan = await generateDailyPlan(today);
     
-    // Only try to save in development (production can't write to filesystem)
-    if (process.env.NODE_ENV !== 'production') {
-      await savePlan(plan);
-      console.log('💾 Generated and saved new plan for today');
-    } else {
-      console.log('✅ Generated new plan for today (production - no file save)');
-    }
+    // Save to Supabase database in all environments
+    await savePlan(plan);
+    console.log('💾 Generated and saved new plan to database for today');
 
     // Generate PDF
     console.log('📄 Generating PDF...');

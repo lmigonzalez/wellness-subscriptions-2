@@ -21,20 +21,24 @@ export async function GET(request: NextRequest) {
       // If specific date requested, try to get from storage
       plan = await getPlanByDate(date);
     } else {
-      // For today's plan, handle production vs development differently
-      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1' || forceRefresh;
+      // For today's plan, use database-first approach unless force refresh is requested
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
       
-      if (isProduction) {
-        // In production (Vercel) or when force refresh is requested, always generate fresh content for today
-        console.log(`Production/Force refresh mode: Generating fresh daily plan for ${today}`);
+      if (isProduction && forceRefresh) {
+        // Only generate fresh content when explicitly requested via force refresh
+        console.log(`Force refresh mode: Generating fresh daily plan for ${today}`);
         console.log(`Environment variables: NODE_ENV=${process.env.NODE_ENV}, VERCEL=${process.env.VERCEL}`);
         
         try {
           plan = await generateDailyPlan(today);
-          console.log(`Successfully generated fresh plan for ${today}`);
+          await savePlan(plan);
+          console.log(`Successfully generated and saved fresh plan for ${today}`);
         } catch (error) {
           console.error(`Error generating plan: ${error}`);
-          // In production, if OpenAI fails, return a fallback plan with today's date
+          // If OpenAI fails during force refresh, try to get existing plan from database
+          plan = await getTodaysPlan();
+          if (!plan) {
+            // If no existing plan, return a fallback plan with today's date
           plan = {
             date: today,
             quote: {
@@ -115,19 +119,22 @@ export async function GET(request: NextRequest) {
                 instructions: ["Preheat oven to 425°F", "Roast vegetables for 20 minutes", "Grill salmon 4-5 minutes per side", "Serve together"]
               }
             }
-          };
-          console.log(`Using fallback plan for ${today} due to OpenAI error`);
+            };
+            console.log(`Using fallback plan for ${today} due to OpenAI error`);
+          }
         }
       } else {
-        // In development, try to get from storage first, then generate if needed
-        console.log(`Development mode: Checking storage for ${today}`);
+        // In all other cases (development or production without force refresh), use database-first approach
+        console.log(`Database-first mode: Checking storage for ${today}`);
         plan = await getTodaysPlan();
         
         if (!plan) {
-          console.log(`Development mode: No plan found for ${today}, generating with OpenAI...`);
+          console.log(`No plan found for ${today}, generating with OpenAI...`);
           plan = await generateDailyPlan(today);
           await savePlan(plan);
           console.log("Generated and saved new plan for today");
+        } else {
+          console.log(`Found existing plan in database for ${today}`);
         }
       }
     }
