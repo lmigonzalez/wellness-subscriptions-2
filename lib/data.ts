@@ -45,23 +45,23 @@ export const samplePlans: DailyPlan[] = [
       {
         name: "Push-ups",
         description: "Classic upper body strength exercise",
-        duration: "3 sets",
+        duration: "3-5 minutes",
         sets: "3",
-        reps: "10-15"
+        reps: "15 reps"
       },
       {
         name: "Squats",
         description: "Lower body strength and mobility",
-        duration: "3 sets",
+        duration: "4-6 minutes",
         sets: "3",
-        reps: "15-20"
+        reps: "20 reps"
       },
       {
         name: "Plank",
         description: "Core strengthening exercise",
-        duration: "3 sets",
+        duration: "2-3 minutes",
         sets: "3",
-        reps: "30-60 seconds"
+        reps: "45 seconds"
       },
       {
         name: "Jumping Jacks",
@@ -71,9 +71,9 @@ export const samplePlans: DailyPlan[] = [
       {
         name: "Lunges",
         description: "Single leg strength and balance",
-        duration: "3 sets",
+        duration: "4-5 minutes",
         sets: "3",
-        reps: "10 each leg"
+        reps: "12 each leg"
       },
       {
         name: "Cool Down Walk",
