@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { DailyPlan, Exercise, Meal } from './data';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,14 +16,18 @@ export interface DailyPlanDB {
   date: string;
   quote_text: string;
   quote_author: string;
-  workout: any;
-  meals: any;
+  workout: Exercise[];
+  meals: {
+    breakfast: Meal;
+    lunch: Meal;
+    dinner: Meal;
+  };
   created_at?: string;
   updated_at?: string;
 }
 
 // Helper function to convert DailyPlan to DB format
-export function planToDB(plan: any): DailyPlanDB {
+export function planToDB(plan: DailyPlan): DailyPlanDB {
   return {
     date: plan.date,
     quote_text: plan.quote.text,
@@ -33,7 +38,7 @@ export function planToDB(plan: any): DailyPlanDB {
 }
 
 // Helper function to convert DB format to DailyPlan
-export function dbToPlan(dbPlan: DailyPlanDB): any {
+export function dbToPlan(dbPlan: DailyPlanDB): DailyPlan {
   return {
     date: dbPlan.date,
     quote: {
