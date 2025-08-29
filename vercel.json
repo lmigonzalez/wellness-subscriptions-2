@@ -12,11 +12,11 @@
   },
   "headers": [
     {
-      "source": "/api/daily-plan",
+      "source": "/api/daily-plan(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
         },
         {
           "key": "Pragma",
@@ -25,8 +25,22 @@
         {
           "key": "Expires",
           "value": "0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Vercel-CDN-Cache-Control", 
+          "value": "no-cache"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/daily-plan",
+      "destination": "/api/daily-plan?nocache=true"
     }
   ]
 }

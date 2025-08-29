@@ -26,7 +26,16 @@ export default function Dashboard() {
   const fetchDailyPlan = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/daily-plan");
+      // Add timestamp and random number to force fresh requests
+      const timestamp = new Date().getTime();
+      const random = Math.random().toString(36).substring(7);
+      const response = await fetch(`/api/daily-plan?t=${timestamp}&r=${random}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch daily plan");
       }

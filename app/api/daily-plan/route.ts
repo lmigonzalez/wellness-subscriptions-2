@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTodaysPlan, getPlanByDate, savePlan } from "@/lib/storage";
 import { generateDailyPlan } from "@/lib/openai";
 
+// Force dynamic rendering - prevent static generation
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -148,13 +152,20 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    // Set cache control headers to prevent caching in production
+    // Set aggressive cache control headers to prevent any caching
     const nextResponse = NextResponse.json(response);
-    if (process.env.NODE_ENV === 'production') {
-      nextResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      nextResponse.headers.set('Pragma', 'no-cache');
-      nextResponse.headers.set('Expires', '0');
-    }
+    
+    // Aggressive cache prevention
+    nextResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0');
+    nextResponse.headers.set('Pragma', 'no-cache');
+    nextResponse.headers.set('Expires', '0');
+    nextResponse.headers.set('Last-Modified', new Date().toUTCString());
+    nextResponse.headers.set('Vary', '*');
+    
+    // Vercel-specific headers
+    nextResponse.headers.set('X-Vercel-Cache', 'MISS');
+    nextResponse.headers.set('CDN-Cache-Control', 'no-cache');
+    nextResponse.headers.set('Vercel-CDN-Cache-Control', 'no-cache');
 
     return nextResponse;
   } catch (error) {
