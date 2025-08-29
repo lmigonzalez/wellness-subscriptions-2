@@ -7,10 +7,10 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-
     "test-wellness": "node scripts/test-wellness-system.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
     "next": "15.5.0",
     "openai": "^5.15.0",
     "puppeteer": "^24.17.0",

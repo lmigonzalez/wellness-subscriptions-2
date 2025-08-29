@@ -242,8 +242,10 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
     const workout = await generateDailyWorkout(date);
     console.log(`Generated daily workout with ${workout.length} exercises`);
     
-    // Get or generate daily meals
-    const dailyMeals = await getOrGenerateDailyMeals(date);
+    // Get daily meals
+    console.log(`Generating daily meals for ${date}...`);
+    const dailyMeals = await generateDailyMeals(date);
+    console.log(`Generated daily meals with breakfast: ${dailyMeals.breakfast?.name || 'none'}`);
     
     return {
       date,
@@ -257,42 +259,7 @@ export async function generateDailyPlan(date: string): Promise<DailyPlan> {
   }
 }
 
-// Helper function to get or generate daily meals
-async function getOrGenerateDailyMeals(date: string) {
-  // In production (Vercel), we can't write to filesystem
-  // So we'll always generate fresh daily content
-  if (process.env.NODE_ENV === 'production') {
-    console.log(`Generating fresh daily meals for ${date} in production...`);
-    return await generateDailyMeals(date);
-  }
-  
-  // In development, try to load existing daily meals from storage
-  try {
-    const { getPlanByDate, savePlan } = await import('./storage');
-    const existingPlan = await getPlanByDate(date);
-    
-    if (!existingPlan || !existingPlan.meals) {
-      // Generate new daily meals
-      console.log(`Generating new daily meals for ${date}...`);
-      const dailyMeals = await generateDailyMeals(date);
-      const planToSave = { 
-        date,
-        quote: { text: "Fallback quote", author: "Unknown" },
-        workout: [],
-        meals: dailyMeals
-      };
-      await savePlan(planToSave);
-      console.log(`Generated and saved daily meals for ${date}`);
-      return dailyMeals;
-    } else {
-      console.log(`Loaded existing daily meals for ${date}`);
-      return existingPlan.meals;
-    }
-  } catch (error) {
-    console.error('Error with daily meals storage:', error);
-    return getFallbackDailyMeals();
-  }
-}
+
 
 // Fallback quote if OpenAI is unavailable - now includes date-based variation
 function getFallbackQuote(date: string): { text: string; author: string } {
