@@ -36,7 +36,7 @@ export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
 export async function getTodaysPlan(): Promise<DailyPlan | null> {
   const today = new Date().toISOString().split("T")[0];
   
-  // Try to get from database first
+
   let plan = await getPlanByDate(today);
   
   if (!plan) {
