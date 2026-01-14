@@ -79,10 +79,10 @@ export async function savePlan(plan: DailyPlan): Promise<void> {
     });
 
     console.log(`Plan saved to database for ${plan.date}`);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in savePlan:', {
-      message: error?.message || 'Unknown error',
-      details: error?.stack || 'No details',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.stack : 'No details',
     });
     throw error;
   }
