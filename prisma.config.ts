@@ -4,6 +4,17 @@
 import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
+// Vercel Postgres provides POSTGRES_URL, but Prisma expects DATABASE_URL
+// Map POSTGRES_URL or PRISMA_DATABASE_URL to DATABASE_URL if needed
+// This must happen BEFORE env() is called, as env() validates immediately
+if (!process.env.DATABASE_URL) {
+  if (process.env.POSTGRES_URL) {
+    process.env.DATABASE_URL = process.env.POSTGRES_URL;
+  } else if (process.env.PRISMA_DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.PRISMA_DATABASE_URL;
+  }
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {

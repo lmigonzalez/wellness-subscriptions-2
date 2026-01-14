@@ -6,7 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  // Vercel Postgres provides POSTGRES_URL, but Prisma expects DATABASE_URL
+  // We'll handle the mapping in the Prisma client initialization
   url      = env("DATABASE_URL")
 }
 

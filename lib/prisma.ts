@@ -5,6 +5,16 @@ import { DailyPlan, Exercise, Meal } from './data';
 // exhausting your database connection limit.
 // Learn more: https://pris.ly/d/help/nextjs-best-practices
 
+// Vercel Postgres provides POSTGRES_URL, but Prisma expects DATABASE_URL
+// Map POSTGRES_URL or PRISMA_DATABASE_URL to DATABASE_URL if needed
+if (!process.env.DATABASE_URL) {
+  if (process.env.POSTGRES_URL) {
+    process.env.DATABASE_URL = process.env.POSTGRES_URL;
+  } else if (process.env.PRISMA_DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.PRISMA_DATABASE_URL;
+  }
+}
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };

@@ -1,16 +1,16 @@
 # 🗄️ Database Setup Guide
 
-## Database: SQLite with Prisma
+## Database: PostgreSQL with Prisma
 
-This project uses **SQLite** with **Prisma ORM** for database operations. SQLite is perfect for this use case because:
+This project uses **PostgreSQL** with **Prisma ORM** for database operations. PostgreSQL is required for Vercel deployments because:
 
-- ✅ **No external dependencies** - Database is a local file
-- ✅ **Simple setup** - No cloud service configuration needed
-- ✅ **Fast and reliable** - Perfect for single-instance deployments
-- ✅ **Production ready** - Works great on Vercel and other platforms
+- ✅ **Serverless compatible** - Works perfectly with Vercel's serverless functions
+- ✅ **Persistent storage** - Data persists across function invocations
+- ✅ **Scalable** - Can handle production workloads
 - ✅ **Type-safe** - Prisma provides excellent TypeScript support
+- ✅ **Production ready** - Industry standard for production applications
 
-## 🚀 Quick Setup (2 minutes)
+## 🚀 Quick Setup (5 minutes)
 
 ### Step 1: Install Dependencies
 
@@ -20,28 +20,78 @@ Dependencies are already installed, but if you need to reinstall:
 npm install
 ```
 
-### Step 2: Set Up Environment Variables
+### Step 2: Set Up Database
 
-1. Copy `.env.example` to `.env.local`:
+#### Option A: Vercel Postgres (Recommended for Production)
+
+1. **Create Vercel Postgres Database:**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Select your project → **Storage** tab
+   - Click **Create Database** → Select **Postgres**
+   - Choose a name for your database
+   - Select a region close to your users
+   - Click **Create**
+
+2. **Get Connection String:**
+   - After creation, go to **Settings** → **Environment Variables**
+   - Vercel automatically creates `POSTGRES_URL` (or `DATABASE_URL`)
+   - Copy the connection string
+
+3. **Add to Environment Variables:**
+   - In Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Add `DATABASE_URL` with the connection string from step 2
+   - Make sure to add it for **Production**, **Preview**, and **Development** environments
+
+#### Option B: Local PostgreSQL (For Development)
+
+1. **Install PostgreSQL locally:**
    ```bash
-   cp env.example .env.local
+   # macOS (using Homebrew)
+   brew install postgresql@15
+   brew services start postgresql@15
+   
+   # Or use Docker
+   docker run --name wellness-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_DB=wellness_db -p 5432:5432 -d postgres:15
    ```
 
-2. The `DATABASE_URL` is already configured for SQLite:
+2. **Create Database:**
    ```bash
-   DATABASE_URL="file:./dev.db"
+   createdb wellness_db
+   # Or with Docker, it's already created
    ```
+
+3. **Set Environment Variable:**
+   Create `.env.local` file:
+   ```bash
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/wellness_db?schema=public"
+   ```
+   
+   Replace `postgres`, `password`, and `wellness_db` with your actual credentials.
+
+#### Option C: Other PostgreSQL Providers
+
+You can also use:
+- **Supabase** (Free tier available): https://supabase.com
+- **Neon** (Serverless Postgres): https://neon.tech
+- **Railway**: https://railway.app
+- **Render**: https://render.com
+
+Just get the connection string and add it to your `DATABASE_URL` environment variable.
 
 ### Step 3: Run Database Migrations
 
-The database schema is already set up, but if you need to reset:
+After setting up your database, run migrations:
 
 ```bash
+# For local development
 npx prisma migrate dev
+
+# For production (Vercel)
+npx prisma migrate deploy
 ```
 
 This will:
-- Create the SQLite database file (`dev.db`)
+- Create the `daily_plans` table
 - Apply all migrations
 - Generate the Prisma Client
 
@@ -56,14 +106,14 @@ npx prisma generate
 ## 🔧 Database Schema
 
 The `daily_plans` table stores:
-- **id**: Auto-incrementing primary key
-- **date**: YYYY-MM-DD format (unique)
-- **quoteText**: Daily motivational quote text
-- **quoteAuthor**: Quote author name
-- **workout**: JSON string of exercises array
-- **meals**: JSON string of meals object (breakfast/lunch/dinner)
-- **createdAt**: When plan was created
-- **updatedAt**: When plan was last updated
+- **id**: Auto-incrementing primary key (SERIAL)
+- **date**: YYYY-MM-DD format (unique, TEXT)
+- **quote_text**: Daily motivational quote text (TEXT)
+- **quote_author**: Quote author name (TEXT)
+- **workout**: JSON string of exercises array (TEXT)
+- **meals**: JSON string of meals object (breakfast/lunch/dinner) (TEXT)
+- **created_at**: When plan was created (TIMESTAMP)
+- **updated_at**: When plan was last updated (TIMESTAMP)
 
 ## 🧪 Testing
 
@@ -87,43 +137,54 @@ curl "http://localhost:3000/api/force-refresh"
 curl -X POST "http://localhost:3000/api/clear-today"
 ```
 
-## 🚀 Deploy to Production
+## 🚀 Deploy to Vercel
 
-### Vercel Deployment
+### Step 1: Set Up Vercel Postgres
 
-1. **Add environment variable to Vercel:**
-   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-   - Add `DATABASE_URL` with value `file:./prisma/dev.db` (or use a different path)
+1. Go to Vercel Dashboard → Your Project → **Storage** tab
+2. Click **Create Database** → Select **Postgres**
+3. Choose a name and region
+4. Click **Create**
 
-2. **Update Prisma for production:**
-   - The database file will be created automatically on first run
-   - For persistent storage, consider using Vercel's file system or switch to PostgreSQL
+### Step 2: Add Environment Variables
 
-3. **Deploy:**
-   ```bash
-   git add .
-   git commit -m "Switch to SQLite with Prisma"
-   git push
-   ```
+Vercel will automatically add `POSTGRES_URL` or `DATABASE_URL`. If you need to add it manually:
 
-### Alternative: Use PostgreSQL in Production
+1. Go to Vercel Dashboard → Your Project → **Settings** → **Environment Variables**
+2. Add `DATABASE_URL` with your PostgreSQL connection string
+3. Make sure it's added for **Production**, **Preview**, and **Development**
 
-If you need a more robust database for production, you can switch to PostgreSQL:
+### Step 3: Run Migrations on Vercel
 
-1. Update `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
+Add a build script to run migrations automatically. Update `package.json`:
 
-2. Update `DATABASE_URL` to your PostgreSQL connection string
+```json
+{
+  "scripts": {
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "postinstall": "prisma generate"
+  }
+}
+```
 
-3. Run migrations:
-   ```bash
-   npx prisma migrate deploy
-   ```
+Or use Vercel's build command:
+```bash
+prisma generate && prisma migrate deploy && next build
+```
+
+### Step 4: Deploy
+
+```bash
+git add .
+git commit -m "Migrate to PostgreSQL for Vercel compatibility"
+git push
+```
+
+Vercel will automatically:
+1. Install dependencies
+2. Generate Prisma Client
+3. Run migrations
+4. Build your application
 
 ## 🔍 Prisma Commands
 
@@ -148,35 +209,50 @@ npx prisma migrate reset
 npx prisma generate
 ```
 
+### Deploy Migrations (Production)
+```bash
+npx prisma migrate deploy
+```
+
 ## 🔍 Troubleshooting
 
 ### "Prisma Client not generated"
 Run `npx prisma generate` to generate the client.
 
-### "Database file not found"
-The database file is created automatically on first migration. Run `npx prisma migrate dev`.
+### "Database connection failed"
+- Check your `DATABASE_URL` environment variable
+- Verify your PostgreSQL database is running
+- Check firewall/network settings
+- For Vercel, ensure the connection string is correct in environment variables
 
 ### "Migration failed"
-Check your `DATABASE_URL` in `.env.local`. For SQLite, it should be `file:./dev.db`.
+- Check your `DATABASE_URL` in `.env.local` or Vercel environment variables
+- Ensure the database exists and is accessible
+- Check database user permissions
 
-### "Permission denied"
-Make sure the database file and directory are writable.
+### "Relation does not exist" (on Vercel)
+- Run migrations: `npx prisma migrate deploy`
+- Ensure migrations run during build (add to build script)
 
-## 💡 Benefits of SQLite + Prisma
+### Build Error on Vercel
+- Make sure `DATABASE_URL` is set in Vercel environment variables
+- Add `prisma generate` to your build command
+- Ensure `@prisma/client` is in dependencies (not devDependencies)
 
-- **No external services** - Everything runs locally
-- **Type safety** - Prisma generates TypeScript types
-- **Easy migrations** - Schema changes are version controlled
-- **Great developer experience** - Prisma Studio for database browsing
-- **Fast queries** - SQLite is very fast for read-heavy workloads
-- **Simple backups** - Just copy the database file
+## 💡 Why PostgreSQL Instead of SQLite?
+
+- **Vercel Compatibility**: SQLite requires a writable filesystem, which Vercel's serverless functions don't provide
+- **Persistence**: Data persists across function invocations
+- **Scalability**: PostgreSQL can handle production workloads
+- **Multi-instance**: Works with multiple serverless function instances
+- **Industry Standard**: PostgreSQL is the standard for production applications
 
 ## 🎯 Next Steps
 
 After setup:
 1. Test locally with `npm run dev`
 2. Use Prisma Studio to browse your data: `npx prisma studio`
-3. Deploy to Vercel
-4. Monitor your database file size
+3. Deploy to Vercel with Vercel Postgres
+4. Monitor your database usage in Vercel Dashboard
 
-The SQLite + Prisma solution provides a simple, reliable database setup! 🎉
+The PostgreSQL + Prisma solution provides a robust, production-ready database setup! 🎉

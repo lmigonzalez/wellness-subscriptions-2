@@ -4,10 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "node scripts/setup-db-env.js prisma generate && node scripts/setup-db-env.js prisma migrate deploy && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "test-wellness": "node scripts/test-wellness-system.js"
+    "test-wellness": "node scripts/test-wellness-system.js",
+    "postinstall": "node scripts/setup-db-env.js prisma generate",
+    "prisma": "node scripts/setup-db-env.js prisma",
+    "prisma:generate": "node scripts/setup-db-env.js prisma generate",
+    "prisma:migrate": "node scripts/setup-db-env.js prisma migrate",
+    "prisma:studio": "node scripts/setup-db-env.js prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

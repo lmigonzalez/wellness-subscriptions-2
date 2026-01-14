@@ -1,13 +1,15 @@
 -- CreateTable
 CREATE TABLE "daily_plans" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "date" TEXT NOT NULL,
     "quote_text" TEXT NOT NULL,
     "quote_author" TEXT NOT NULL,
     "workout" TEXT NOT NULL,
     "meals" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "daily_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
