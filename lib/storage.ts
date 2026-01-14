@@ -126,7 +126,7 @@ export async function getAllPlans(): Promise<DailyPlan[]> {
       }
     });
 
-    return dbPlans.map(dbPlan => {
+    return dbPlans.map((dbPlan: Awaited<ReturnType<typeof prisma.dailyPlan.findMany>>[0]) => {
       const workout = JSON.parse(dbPlan.workout);
       const meals = JSON.parse(dbPlan.meals);
       
