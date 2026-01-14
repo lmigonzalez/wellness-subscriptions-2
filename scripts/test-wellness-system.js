@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * Test script to verify daily wellness plans are working with Supabase
+ * Test script to verify daily wellness plans are working with SQLite + Prisma
  * Run with: node scripts/test-wellness-system.js
  */
 
-console.log('🧪 Testing Daily Wellness System with Supabase...\n');
+console.log('🧪 Testing Daily Wellness System with SQLite + Prisma...\n');
 
 // Test the API endpoint directly
 async function testWellnessSystem() {
@@ -39,9 +39,9 @@ async function testWellnessSystem() {
     
     console.log('\n🎉 Testing complete!');
     console.log('\n📊 Summary:');
-    console.log('   ✅ System now uses Supabase database');
+    console.log('   ✅ System now uses SQLite database with Prisma');
     console.log('   ✅ API endpoint working');
-    console.log('   ✅ JSON file dependency removed');
+    console.log('   ✅ Database operations working correctly');
     
   } catch (error) {
     console.error('💥 Test failed:', error);

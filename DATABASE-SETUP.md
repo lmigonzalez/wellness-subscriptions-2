@@ -1,63 +1,75 @@
 # 🗄️ Database Setup Guide
 
-## Why Database Instead of Files?
+## Database: SQLite with Prisma
 
-- ✅ **No caching issues** - Vercel can't cache database queries
-- ✅ **Real-time updates** - Fresh content every time
-- ✅ **Scalable** - Handles multiple users and plans
-- ✅ **Reliable** - No file system dependencies
-- ✅ **Production ready** - Works perfectly on Vercel
+This project uses **SQLite** with **Prisma ORM** for database operations. SQLite is perfect for this use case because:
 
-## 🚀 Quick Setup (5 minutes)
+- ✅ **No external dependencies** - Database is a local file
+- ✅ **Simple setup** - No cloud service configuration needed
+- ✅ **Fast and reliable** - Perfect for single-instance deployments
+- ✅ **Production ready** - Works great on Vercel and other platforms
+- ✅ **Type-safe** - Prisma provides excellent TypeScript support
 
-### Step 1: Create Supabase Account
-1. Go to [supabase.com](https://supabase.com)
-2. Click "Start your project" (FREE tier)
-3. Sign up with GitHub/Google
+## 🚀 Quick Setup (2 minutes)
 
-### Step 2: Create New Project
-1. Click "New Project"
-2. Choose organization
-3. Enter project name: `wellness-subscription`
-4. Enter database password (save this!)
-5. Choose region closest to you
-6. Click "Create new project"
+### Step 1: Install Dependencies
 
-### Step 3: Get API Keys
-1. Go to Settings → API
-2. Copy these values:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Dependencies are already installed, but if you need to reinstall:
 
-### Step 4: Create Database Table
-1. Go to SQL Editor in Supabase
-2. Copy and paste the contents of `database-schema.sql`
-3. Click "Run" to execute
-
-### Step 5: Update Environment Variables
-1. Copy `.env.example` to `.env.local`
-2. Add your Supabase credentials:
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+npm install
+```
+
+### Step 2: Set Up Environment Variables
+
+1. Copy `.env.example` to `.env.local`:
+   ```bash
+   cp env.example .env.local
+   ```
+
+2. The `DATABASE_URL` is already configured for SQLite:
+   ```bash
+   DATABASE_URL="file:./dev.db"
+   ```
+
+### Step 3: Run Database Migrations
+
+The database schema is already set up, but if you need to reset:
+
+```bash
+npx prisma migrate dev
+```
+
+This will:
+- Create the SQLite database file (`dev.db`)
+- Apply all migrations
+- Generate the Prisma Client
+
+### Step 4: Generate Prisma Client
+
+If the client isn't generated yet:
+
+```bash
+npx prisma generate
 ```
 
 ## 🔧 Database Schema
 
 The `daily_plans` table stores:
+- **id**: Auto-incrementing primary key
 - **date**: YYYY-MM-DD format (unique)
-- **quote_text**: Daily motivational quote
-- **quote_author**: Quote author
-- **workout**: JSON array of exercises
-- **meals**: JSON object with breakfast/lunch/dinner
-- **created_at**: When plan was created
-- **updated_at**: When plan was last updated
+- **quoteText**: Daily motivational quote text
+- **quoteAuthor**: Quote author name
+- **workout**: JSON string of exercises array
+- **meals**: JSON string of meals object (breakfast/lunch/dinner)
+- **createdAt**: When plan was created
+- **updatedAt**: When plan was last updated
 
 ## 🧪 Testing
 
 ### Test Database Connection
 ```bash
-curl "http://localhost:3000/api/debug"
+curl "http://localhost:3000/api/test-db"
 ```
 
 ### Test Plan Generation
@@ -70,52 +82,101 @@ curl "http://localhost:3000/api/daily-plan"
 curl "http://localhost:3000/api/force-refresh"
 ```
 
+### Clear Today's Plan
+```bash
+curl -X POST "http://localhost:3000/api/clear-today"
+```
+
 ## 🚀 Deploy to Production
 
-1. **Add environment variables to Vercel:**
-   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
-   - Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+### Vercel Deployment
 
-2. **Deploy:**
+1. **Add environment variable to Vercel:**
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Add `DATABASE_URL` with value `file:./prisma/dev.db` (or use a different path)
+
+2. **Update Prisma for production:**
+   - The database file will be created automatically on first run
+   - For persistent storage, consider using Vercel's file system or switch to PostgreSQL
+
+3. **Deploy:**
    ```bash
    git add .
-   git commit -m "Add database support for daily plans"
+   git commit -m "Switch to SQLite with Prisma"
    git push
    ```
 
-3. **Test production:**
-   ```bash
-   curl "https://your-domain.vercel.app/api/daily-plan"
+### Alternative: Use PostgreSQL in Production
+
+If you need a more robust database for production, you can switch to PostgreSQL:
+
+1. Update `prisma/schema.prisma`:
+   ```prisma
+   datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+   }
    ```
+
+2. Update `DATABASE_URL` to your PostgreSQL connection string
+
+3. Run migrations:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+## 🔍 Prisma Commands
+
+### View Database in Prisma Studio
+```bash
+npx prisma studio
+```
+Opens a visual database browser at `http://localhost:5555`
+
+### Create a New Migration
+```bash
+npx prisma migrate dev --name migration_name
+```
+
+### Reset Database (⚠️ Deletes all data)
+```bash
+npx prisma migrate reset
+```
+
+### Generate Prisma Client
+```bash
+npx prisma generate
+```
 
 ## 🔍 Troubleshooting
 
-### "Missing Supabase environment variables"
-- Check your `.env.local` file
-- Ensure variables are prefixed with `NEXT_PUBLIC_`
+### "Prisma Client not generated"
+Run `npx prisma generate` to generate the client.
 
-### "Table doesn't exist"
-- Run the SQL schema in Supabase SQL Editor
-- Check table name is exactly `daily_plans`
+### "Database file not found"
+The database file is created automatically on first migration. Run `npx prisma migrate dev`.
+
+### "Migration failed"
+Check your `DATABASE_URL` in `.env.local`. For SQLite, it should be `file:./dev.db`.
 
 ### "Permission denied"
-- Check Row Level Security (RLS) policies in Supabase
-- Ensure the "Allow all operations" policy is active
+Make sure the database file and directory are writable.
 
-## 💡 Benefits
+## 💡 Benefits of SQLite + Prisma
 
-- **No more caching issues** - Database queries are always fresh
-- **Real-time data** - Updates immediately
-- **Scalable** - Can handle thousands of users
-- **Reliable** - No file system dependencies
-- **Production ready** - Works perfectly on Vercel
+- **No external services** - Everything runs locally
+- **Type safety** - Prisma generates TypeScript types
+- **Easy migrations** - Schema changes are version controlled
+- **Great developer experience** - Prisma Studio for database browsing
+- **Fast queries** - SQLite is very fast for read-heavy workloads
+- **Simple backups** - Just copy the database file
 
 ## 🎯 Next Steps
 
 After setup:
 1. Test locally with `npm run dev`
-2. Deploy to Vercel
-3. Test production endpoint
-4. Monitor Supabase dashboard for usage
+2. Use Prisma Studio to browse your data: `npx prisma studio`
+3. Deploy to Vercel
+4. Monitor your database file size
 
-The database solution will completely eliminate the Vercel caching issues! 🎉
+The SQLite + Prisma solution provides a simple, reliable database setup! 🎉

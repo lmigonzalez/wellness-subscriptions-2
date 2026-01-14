@@ -1,5 +1,10 @@
--- Daily Plans Database Schema
--- Run this in your Supabase SQL editor
+-- ⚠️ DEPRECATED: This file is no longer used
+-- The project now uses Prisma with SQLite
+-- See prisma/schema.prisma for the current schema definition
+-- This file is kept for reference only
+
+-- Daily Plans Database Schema (PostgreSQL/Supabase version)
+-- This was the original schema when using Supabase
 
 -- Create the daily_plans table
 CREATE TABLE IF NOT EXISTS daily_plans (

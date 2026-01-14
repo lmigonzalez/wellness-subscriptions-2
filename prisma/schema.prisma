@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model DailyPlan {
+  id          Int      @id @default(autoincrement())
+  date        String   @unique // YYYY-MM-DD format
+  quoteText   String   @map("quote_text")
+  quoteAuthor String   @map("quote_author")
+  workout     String   // JSON string of Exercise[]
+  meals       String   // JSON string of meals object
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("daily_plans")
+  @@index([date])
+  @@index([createdAt])
+}

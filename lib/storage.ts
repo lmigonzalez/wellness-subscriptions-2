@@ -1,21 +1,31 @@
 import { DailyPlan } from "./data";
-import { supabase, planToDB, dbToPlan } from "./supabase";
+import { prisma, planToDB, dbToPlan } from "./prisma";
 
 // Get plan by date from database
 export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
   try {
-    const { data, error } = await supabase
-      .from('daily_plans')
-      .select('*')
-      .eq('date', date)
-      .single();
+    const dbPlan = await prisma.dailyPlan.findUnique({
+      where: { date }
+    });
 
-    if (error || !data) {
-      console.log(`No plan found in database for ${date}`);
+    if (!dbPlan) {
       return null;
     }
 
-    return dbToPlan(data);
+    // Parse JSON strings back to objects
+    const workout = JSON.parse(dbPlan.workout);
+    const meals = JSON.parse(dbPlan.meals);
+
+    return dbToPlan({
+      id: dbPlan.id,
+      date: dbPlan.date,
+      quoteText: dbPlan.quoteText,
+      quoteAuthor: dbPlan.quoteAuthor,
+      workout,
+      meals,
+      createdAt: dbPlan.createdAt,
+      updatedAt: dbPlan.updatedAt
+    });
   } catch (error) {
     console.error(`Error fetching plan for ${date}:`, error);
     return null;
@@ -26,7 +36,7 @@ export async function getPlanByDate(date: string): Promise<DailyPlan | null> {
 export async function getTodaysPlan(): Promise<DailyPlan | null> {
   const today = new Date().toISOString().split("T")[0];
   
-  // Always try to get from database first
+  // Try to get from database first
   let plan = await getPlanByDate(today);
   
   if (!plan) {
@@ -45,23 +55,35 @@ export async function getTodaysPlan(): Promise<DailyPlan | null> {
 // Save plan to database
 export async function savePlan(plan: DailyPlan): Promise<void> {
   try {
-    const planData = planToDB(plan);
+    const dbData = planToDB(plan);
     
-    const { error } = await supabase
-      .from('daily_plans')
-      .upsert(planData, { 
-        onConflict: 'date',
-        ignoreDuplicates: false 
-      });
+    // Convert workout and meals to JSON strings
+    const workoutJson = JSON.stringify(dbData.workout);
+    const mealsJson = JSON.stringify(dbData.meals);
 
-    if (error) {
-      console.error('Error saving plan to database:', error);
-      throw error;
-    }
+    await prisma.dailyPlan.upsert({
+      where: { date: plan.date },
+      update: {
+        quoteText: dbData.quoteText,
+        quoteAuthor: dbData.quoteAuthor,
+        workout: workoutJson,
+        meals: mealsJson
+      },
+      create: {
+        date: dbData.date,
+        quoteText: dbData.quoteText,
+        quoteAuthor: dbData.quoteAuthor,
+        workout: workoutJson,
+        meals: mealsJson
+      }
+    });
 
     console.log(`Plan saved to database for ${plan.date}`);
-  } catch (error) {
-    console.error('Error in savePlan:', error);
+  } catch (error: any) {
+    console.error('Error in savePlan:', {
+      message: error?.message || 'Unknown error',
+      details: error?.stack || 'No details',
+    });
     throw error;
   }
 }
@@ -79,15 +101,16 @@ export async function cleanupOldPlans(): Promise<void> {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const cutoffDate = thirtyDaysAgo.toISOString().split("T")[0];
     
-    const { error } = await supabase
-      .from('daily_plans')
-      .delete()
-      .lt('date', cutoffDate);
+    const result = await prisma.dailyPlan.deleteMany({
+      where: {
+        date: {
+          lt: cutoffDate
+        }
+      }
+    });
 
-    if (error) {
-      console.error('Error cleaning up old plans:', error);
-    } else {
-      console.log(`Cleaned up old plans before ${cutoffDate}`);
+    if (result.count > 0) {
+      console.log(`Cleaned up ${result.count} old plans before ${cutoffDate}`);
     }
   } catch (error) {
     console.error('Error in cleanupOldPlans:', error);
@@ -97,17 +120,27 @@ export async function cleanupOldPlans(): Promise<void> {
 // Get all plans (for admin purposes)
 export async function getAllPlans(): Promise<DailyPlan[]> {
   try {
-    const { data, error } = await supabase
-      .from('daily_plans')
-      .select('*')
-      .order('date', { ascending: false });
+    const dbPlans = await prisma.dailyPlan.findMany({
+      orderBy: {
+        date: 'desc'
+      }
+    });
 
-    if (error || !data) {
-      console.error('Error fetching all plans:', error);
-      return [];
-    }
-
-    return data.map(dbToPlan);
+    return dbPlans.map(dbPlan => {
+      const workout = JSON.parse(dbPlan.workout);
+      const meals = JSON.parse(dbPlan.meals);
+      
+      return dbToPlan({
+        id: dbPlan.id,
+        date: dbPlan.date,
+        quoteText: dbPlan.quoteText,
+        quoteAuthor: dbPlan.quoteAuthor,
+        workout,
+        meals,
+        createdAt: dbPlan.createdAt,
+        updatedAt: dbPlan.updatedAt
+      });
+    });
   } catch (error) {
     console.error('Error in getAllPlans:', error);
     return [];

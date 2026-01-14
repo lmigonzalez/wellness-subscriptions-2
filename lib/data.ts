@@ -29,4 +29,4 @@ export interface DailyPlan {
 }
 
 // Note: This file now only contains type definitions.
-// All data operations are handled by lib/storage.ts which uses Supabase.
+// All data operations are handled by lib/storage.ts which uses Prisma with SQLite.

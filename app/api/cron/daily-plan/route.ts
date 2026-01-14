@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
     console.log('📝 Generating fresh daily plan with OpenAI...');
     const plan = await generateDailyPlan(today);
     
-    // Save to Supabase database in all environments
+    // Save to database (SQLite with Prisma)
     await savePlan(plan);
     console.log('💾 Generated and saved new plan to database for today');
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { prisma } from "@/lib/prisma";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -11,18 +11,9 @@ export async function POST() {
     
     console.log(`🗑️ Clearing today's plan from database: ${today}`);
     
-    const { error } = await supabase
-      .from('daily_plans')
-      .delete()
-      .eq('date', today);
-
-    if (error) {
-      console.error('Error clearing today\'s plan:', error);
-      return NextResponse.json({
-        success: false,
-        error: error.message
-      }, { status: 500 });
-    }
+    await prisma.dailyPlan.deleteMany({
+      where: { date: today }
+    });
 
     console.log(`✅ Successfully cleared plan for ${today}`);
     

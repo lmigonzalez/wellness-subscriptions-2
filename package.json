@@ -10,10 +10,11 @@
     "test-wellness": "node scripts/test-wellness-system.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.56.0",
+    "@prisma/client": "^6.19.2",
     "framer-motion": "^12.23.12",
     "next": "15.5.0",
     "openai": "^5.15.0",
+    "prisma": "^6.19.2",
     "puppeteer": "^24.17.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

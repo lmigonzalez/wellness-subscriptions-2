@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { prisma } from "@/lib/prisma";
 import { generateDailyPlan } from "@/lib/openai";
 import { savePlan, getPlanByDate } from "@/lib/storage";
 
@@ -43,20 +43,24 @@ export async function GET() {
     
     // Step 5: Test direct database query
     console.log("Step 5: Testing direct database query...");
-    const { data: dbData, error: dbError } = await supabase
-      .from('daily_plans')
-      .select('*')
-      .eq('date', today)
-      .single();
-    
-    if (dbError) {
-      console.error("Database error:", dbError);
-    } else {
-      console.log("Direct DB query result:", {
-        date: dbData?.date,
-        workoutLength: Array.isArray(dbData?.workout) ? dbData.workout.length : "Not array",
-        mealsType: typeof dbData?.meals
+    let dbData = null;
+    let dbError = null;
+    try {
+      dbData = await prisma.dailyPlan.findUnique({
+        where: { date: today }
       });
+      
+      if (dbData) {
+        const workout = JSON.parse(dbData.workout);
+        console.log("Direct DB query result:", {
+          date: dbData.date,
+          workoutLength: Array.isArray(workout) ? workout.length : "Not array",
+          mealsType: typeof dbData.meals
+        });
+      }
+    } catch (error) {
+      dbError = error;
+      console.error("Database error:", error);
     }
     
     return NextResponse.json({
@@ -78,10 +82,10 @@ export async function GET() {
           workoutCount: retrievedPlan?.workout?.length || 0,
           hasBreakfast: !!retrievedPlan?.meals?.breakfast
         },
-        direct: {
-          workoutLength: Array.isArray(dbData?.workout) ? dbData.workout.length : "Not array",
-          mealsType: typeof dbData?.meals
-        }
+        direct: dbData ? {
+          workoutLength: Array.isArray(JSON.parse(dbData.workout)) ? JSON.parse(dbData.workout).length : "Not array",
+          mealsType: typeof dbData.meals
+        } : null
       },
       errors: dbError ? [dbError] : []
     });
