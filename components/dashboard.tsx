@@ -12,7 +12,7 @@ const playfairDisplay = Playfair_Display({
   weight: ["400", "700"],
 });
 
-// Scroll-triggered animation component
+
 function RevealOnScroll({
   children,
   delay = 0,
